@@ -136,7 +136,7 @@ export const Editor = ({
 
   // Si el documento Yjs colaborativo está recién creado y vacío, sembrar con initialContent de SQLite
   useEffect(() => {
-    if (!editor || !provider || !ydoc || isInitializedRef.current) return;
+    if (!editor || !provider || !ydoc) return;
 
     const seedInitialContent = () => {
       if (isInitializedRef.current) return;
@@ -172,6 +172,11 @@ export const Editor = ({
   }, []);
 
   const handleChange = () => {
+    // Si no está inicializado (o está cargando el Yjs colaborativo), no guardar para evitar vaciado
+    if (provider && !isInitializedRef.current) {
+      return;
+    }
+
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
