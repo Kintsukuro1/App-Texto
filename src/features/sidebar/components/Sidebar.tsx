@@ -7,6 +7,50 @@ import { PageTreeNode } from '@/features/sidebar/components/PageTreeNode';
 import { vocabulary } from '@/core/vocabulary';
 import type { Page } from '@/types/page';
 
+const RootDropZone = () => {
+  const { updatePage } = useNotesStore();
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (draggedId) {
+      updatePage(draggedId, { parentId: null });
+    }
+  };
+
+  return (
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`mt-2 p-2 rounded-xl border-2 border-dashed text-[11px] text-center transition-all ${
+        isDragOver
+          ? 'bg-indigo-600/30 border-indigo-400 text-indigo-300 font-medium scale-[1.02]'
+          : 'border-transparent text-transparent hover:border-[var(--border-muted)] hover:text-[var(--text-muted)]'
+      }`}
+    >
+      {isDragOver ? '📥 Soltar para mover a nivel raíz' : 'Mover a nivel raíz'}
+    </div>
+  );
+};
+
 export const Sidebar = () => {
   const { pages, activePageId, recentPageIds, setActivePageId, createPage } = useNotesStore();
   const { isSidebarCollapsed, toggleSidebar, setSearchOpen, isHubActive, setHubActive, setProfileOpen } = useUiStore();
@@ -240,6 +284,9 @@ export const Sidebar = () => {
                   Sin notas
                 </div>
               )}
+
+              {/* Zona de caída para mover páginas al nivel raíz */}
+              <RootDropZone />
             </div>
           </div>
         )}
