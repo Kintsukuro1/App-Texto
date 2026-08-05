@@ -145,12 +145,16 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     }));
 
     try {
-      await fetch(`${API_BASE}/${id}`, {
+      const res = await fetch(`${API_BASE}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
         body: JSON.stringify(changes),
       });
+
+      if (!res.ok) {
+        console.error('Error HTTP al guardar página:', res.status, await res.text());
+      }
     } catch (err) {
       console.error('Error updating page:', err);
     }

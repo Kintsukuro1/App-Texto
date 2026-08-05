@@ -34,18 +34,10 @@ export async function startFastify(port: number = PORT): Promise<void> {
   // Register CORS — acepta localhost y red LAN
   await server.register(cors, {
     origin: (origin, cb) => {
-      const allowed = [
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-        `http://localhost:${port}`,
-        `http://127.0.0.1:${port}`,
-      ];
-      if (!origin || allowed.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(null, true); // En red LAN aceptamos cualquier origen (red privada)
-      }
+      cb(null, true); // En red local aceptamos cualquier origen
     },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
     credentials: true,
   });
 
