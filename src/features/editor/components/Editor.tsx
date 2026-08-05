@@ -34,12 +34,14 @@ export const Editor = ({
     if (!pageId || !user || !sessionToken) return;
 
     const doc = new Y.Doc();
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsHost = window.location.hostname || 'localhost';
+    const wsUrl = `${wsProtocol}//${wsHost}:1234`;
+
     const hocusProvider = new HocuspocusProvider({
-      url: 'ws://localhost:1234',
+      url: wsUrl,
       name: pageId,
       document: doc,
-      // Pasar el token directamente — Hocuspocus lo envía como header Authentication
-      // en el handshake WS, solucionando el problema de cookies entre puertos en Electron
       token: sessionToken,
     });
 

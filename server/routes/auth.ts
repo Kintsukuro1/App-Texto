@@ -53,8 +53,8 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
       path: '/',
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
+      secure: false,
+      maxAge: 30 * 24 * 60 * 60,
     });
 
     return reply.status(201).send({
@@ -100,7 +100,7 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
       path: '/',
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       maxAge: 30 * 24 * 60 * 60,
     });
 
