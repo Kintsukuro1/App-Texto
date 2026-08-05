@@ -28,6 +28,7 @@ export const PageView = ({ page }: PageViewProps) => {
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [commentsCount, setCommentsCount] = useState(0);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
 
   const [collabProvider, setCollabProvider] = useState<HocuspocusProvider | null>(null);
   const presenceUsers = usePresence(collabProvider);
@@ -205,6 +206,21 @@ export const PageView = ({ page }: PageViewProps) => {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Indicador de Autoguardado en tiempo real (estilo Google Docs / Notion) */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-muted)] text-[11px] font-medium transition-all">
+              {saveStatus === 'saving' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+                  <span className="text-amber-400 font-mono">💾 Guardando...</span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                  <span className="text-[var(--text-secondary)] font-mono">☁️ Guardado en SQLite</span>
+                </>
+              )}
+            </div>
+
             {/* Avatares de Presencia en Tiempo Real */}
             {presenceUsers.length > 0 && (
               <div className="flex items-center gap-2 bg-[var(--bg-surface)] px-3 py-1 rounded-full border border-[var(--border-muted)] animate-fade-in">
@@ -451,6 +467,7 @@ export const PageView = ({ page }: PageViewProps) => {
               updatePage(page.id, { content: newContent })
             }
             onProviderReady={(prov) => setCollabProvider(prov)}
+            onSavingStatusChange={(status) => setSaveStatus(status)}
           />
         </div>
 

@@ -15,6 +15,7 @@ interface EditorProps {
   readOnly?: boolean;
   onContentChange: (content: string) => void;
   onProviderReady?: (provider: HocuspocusProvider | null) => void;
+  onSavingStatusChange?: (status: 'saved' | 'saving') => void;
 }
 
 export const Editor = ({
@@ -23,6 +24,7 @@ export const Editor = ({
   readOnly = false,
   onContentChange,
   onProviderReady,
+  onSavingStatusChange,
 }: EditorProps) => {
   const { theme } = useUiStore();
   const { user, sessionToken } = useAuthStore();
@@ -177,13 +179,22 @@ export const Editor = ({
       return;
     }
 
+    if (onSavingStatusChange) {
+      onSavingStatusChange('saving');
+    }
+
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
+
+    // Autoguardado ultra rápido a 150ms (estilo Google Docs / Notion)
     debounceTimerRef.current = setTimeout(() => {
       const jsonContent = JSON.stringify(editor.document);
       onContentChange(jsonContent);
-    }, 400);
+      if (onSavingStatusChange) {
+        onSavingStatusChange('saved');
+      }
+    }, 150);
   };
 
   return (
