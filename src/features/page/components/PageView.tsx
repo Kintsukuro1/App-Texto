@@ -6,6 +6,7 @@ import { usePresence } from '@/features/editor/hooks/usePresence';
 import { BacklinksPanel } from './BacklinksPanel';
 import { PageIcon } from '@/components/common/PageIcon';
 import { VersionHistoryModal } from './VersionHistoryModal';
+import { CommentsPanel } from './CommentsPanel';
 import type { HocuspocusProvider } from '@hocuspocus/provider';
 import { API_BASE_URL } from '@/core/config';
 
@@ -24,6 +25,8 @@ export const PageView = ({ page }: PageViewProps) => {
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(0);
 
   const [collabProvider, setCollabProvider] = useState<HocuspocusProvider | null>(null);
   const presenceUsers = usePresence(collabProvider);
@@ -221,6 +224,14 @@ export const PageView = ({ page }: PageViewProps) => {
                 </div>
               </div>
             )}
+
+            <button
+              onClick={() => setIsCommentsOpen(!isCommentsOpen)}
+              className="hover:text-indigo-400 transition-colors cursor-pointer flex items-center gap-1"
+              title="Comentarios"
+            >
+              💬 Comentarios {commentsCount > 0 && <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-600 text-white font-bold">{commentsCount}</span>}
+            </button>
 
             <button
               onClick={() => setIsVersionHistoryOpen(true)}
@@ -435,6 +446,14 @@ export const PageView = ({ page }: PageViewProps) => {
         page={page}
         isOpen={isVersionHistoryOpen}
         onClose={() => setIsVersionHistoryOpen(false)}
+      />
+
+      {/* Panel de Comentarios */}
+      <CommentsPanel
+        page={page}
+        isOpen={isCommentsOpen}
+        onClose={() => setIsCommentsOpen(false)}
+        onCommentsCountChange={(cnt) => setCommentsCount(cnt)}
       />
     </div>
   );

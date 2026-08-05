@@ -77,7 +77,7 @@
 > **Meta**: Hacer que el trabajo en equipo sea seguro, reversible y organizado.
 
 - [x] **Historial de Versiones (Snapshots)**: Guardar versiones por sesión y manuales. Previsualizar instantáneas, ver autor y restaurar versiones anteriores en 1 clic
-- [ ] **Comentarios por Bloque**: Hilo de comentarios en cualquier bloque. Resolver/archivar. Autoría por usuario
+- [x] **Comentarios por Nota/Bloque**: Panel lateral de comentarios (`💬 Comentarios`), avatares de autoría, hilos activos/resueltos y eliminación
 - [ ] **Múltiples Workspaces**: Separar contextos (Personal / Casa / Trabajo) en el mismo servidor local
 - [ ] **Roles y Permisos**: Dueño / Editor / Solo lectura por workspace o por página
 - [ ] **Notificaciones del Sistema**: Alertas nativas de Windows ("Felipe comentó tu nota")

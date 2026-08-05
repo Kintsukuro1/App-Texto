@@ -45,3 +45,17 @@ export const pageVersions = sqliteTable('page_versions', {
   content: text('content').notNull().default(''),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
+
+export const blockComments = sqliteTable('block_comments', {
+  id: text('id').primaryKey(),
+  pageId: text('page_id')
+    .notNull()
+    .references(() => pages.id),
+  blockId: text('block_id'),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
+  content: text('content').notNull(),
+  resolved: integer('resolved', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
