@@ -136,20 +136,35 @@ export const Editor = ({
     isInitializedRef.current = false;
   }, [pageId]);
 
+  const isBlockContentEmpty = (blocks: PartialBlock[] | null | undefined): boolean => {
+    if (!blocks || blocks.length === 0) return true;
+    if (blocks.length === 1) {
+      const first = blocks[0];
+      const type = first.type || 'paragraph';
+      const content = first.content;
+      if (type === 'paragraph') {
+        if (!content) return true;
+        if (Array.isArray(content) && content.length === 0) return true;
+        if (typeof content === 'string' && content.trim() === '') return true;
+      }
+    }
+    return false;
+  };
+
   // Si el documento Yjs colaborativo está recién creado y vacío, sembrar con initialContent de SQLite
   useEffect(() => {
     if (!editor || !provider || !ydoc) return;
 
     const seedInitialContent = () => {
       if (isInitializedRef.current) return;
-      const fragment = ydoc.getXmlFragment('blocknote');
       const parsed = parseInitialContent();
 
-      if (fragment.length === 0 && parsed && parsed.length > 0) {
+      // Si el editor actual está vacío pero SQLite tiene contenido guardado, restaurarlo en Yjs/BlockNote
+      if (isBlockContentEmpty(editor.document as PartialBlock[]) && parsed && !isBlockContentEmpty(parsed)) {
         try {
           editor.replaceBlocks(editor.document, parsed);
         } catch (err) {
-          console.error('Error al inicializar contenido de la nota:', err);
+          console.error('Error al inicializar contenido de la nota desde SQLite:', err);
         }
       }
       isInitializedRef.current = true;
