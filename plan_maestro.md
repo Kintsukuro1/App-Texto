@@ -86,9 +86,9 @@
 
 ## 📤 Fase 5 — Salida, Visualización y Distribución
 
-- [ ] **Exportación**: `.md` (Markdown), `.html`, sitio web estático (snapshot del workspace navegable sin backend)
-- [ ] **Importación**: Archivos Markdown locales desde el explorador de Windows
-- [ ] **Graph View**: Mapa interactivo 2D de nodos (páginas) y aristas (menciones) — requiere Fase 3 completada
+- [x] **Exportación**: `.md` (Markdown) y `.html` descargables por nota desde la vista de la página
+- [x] **Importación**: Lector e importador automático de archivos Markdown (`.md`) desde el explorador de Windows
+- [x] **Graph View 2D**: Mapa interactivo 2D de nodos (páginas) y aristas (menciones `[[Nota]]`) en HTML5 Canvas con navegación por clic
 - [ ] **Auto-Update**: Actualizaciones silenciosas desde `electron-updater`
 
 ---

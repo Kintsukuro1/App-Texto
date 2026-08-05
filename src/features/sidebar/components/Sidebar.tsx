@@ -6,6 +6,7 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { PageTreeNode } from '@/features/sidebar/components/PageTreeNode';
 import { WorkspaceSelector } from '@/features/sidebar/components/WorkspaceSelector';
 import { PageIcon } from '@/components/common/PageIcon';
+import { parseMarkdownToBlocks } from '@/core/importer';
 import { vocabulary } from '@/core/vocabulary';
 import type { Page } from '@/types/page';
 
@@ -60,6 +61,22 @@ export const Sidebar = () => {
   const { activeWorkspaceId } = useWorkspaceStore();
 
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  const handleImportMarkdown = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result as string;
+      if (text) {
+        const { title, blocks } = parseMarkdownToBlocks(text);
+        await createPage(title, JSON.stringify(blocks));
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
 
   const allPagesList = Object.values(pages).filter(
     (p) => !p.workspaceId || p.workspaceId === activeWorkspaceId
@@ -154,14 +171,26 @@ export const Sidebar = () => {
               </kbd>
             </button>
 
-            {/* "+ Nueva nota" Button */}
-            <button
-              onClick={() => createPage()}
-              className="w-full py-1.5 px-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 hover:border-indigo-500/50 text-indigo-300 text-xs font-medium transition-all duration-150 cursor-pointer flex items-center justify-between shadow-sm"
-            >
-              <span>+ Nueva {vocabulary.page}</span>
-              <span className="text-[10px] text-indigo-400/70">+</span>
-            </button>
+            {/* "+ Nueva nota" & "Importar .md" Buttons */}
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => createPage()}
+                className="flex-1 py-1.5 px-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 hover:border-indigo-500/50 text-indigo-300 text-xs font-medium transition-all duration-150 cursor-pointer flex items-center justify-between shadow-sm"
+              >
+                <span>+ Nueva {vocabulary.page}</span>
+                <span className="text-[10px] text-indigo-400/70">+</span>
+              </button>
+
+              <label className="py-1.5 px-2 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium transition-all cursor-pointer flex items-center justify-center shrink-0" title="Importar archivo Markdown (.md)">
+                <span>📥</span>
+                <input
+                  type="file"
+                  accept=".md,.txt"
+                  className="hidden"
+                  onChange={handleImportMarkdown}
+                />
+              </label>
+            </div>
           </div>
         )}
 

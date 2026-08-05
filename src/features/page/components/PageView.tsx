@@ -7,6 +7,7 @@ import { BacklinksPanel } from './BacklinksPanel';
 import { PageIcon } from '@/components/common/PageIcon';
 import { VersionHistoryModal } from './VersionHistoryModal';
 import { CommentsPanel } from './CommentsPanel';
+import { exportPageAsMarkdown, exportPageAsHTML } from '@/core/exporter';
 import type { HocuspocusProvider } from '@hocuspocus/provider';
 import { API_BASE_URL } from '@/core/config';
 
@@ -224,6 +225,22 @@ export const PageView = ({ page }: PageViewProps) => {
                 </div>
               </div>
             )}
+
+            <button
+              onClick={() => exportPageAsMarkdown(page)}
+              className="hover:text-indigo-400 transition-colors cursor-pointer flex items-center gap-1 text-[11px]"
+              title="Exportar como Markdown (.md)"
+            >
+              📤 .md
+            </button>
+
+            <button
+              onClick={() => exportPageAsHTML(page)}
+              className="hover:text-indigo-400 transition-colors cursor-pointer flex items-center gap-1 text-[11px]"
+              title="Exportar como HTML (.html)"
+            >
+              📄 .html
+            </button>
 
             <button
               onClick={() => setIsCommentsOpen(!isCommentsOpen)}

@@ -9,6 +9,7 @@ import { SearchModal } from '@/features/search/components/SearchModal';
 import { HubView } from '@/features/hub/components/HubView';
 import { ProfileSettings } from '@/features/profile/components/ProfileSettings';
 import { SharePanel } from '@/features/share/components/SharePanel';
+import { GraphViewModal } from '@/features/graph/components/GraphViewModal';
 import { requestNotificationPermission } from '@/core/notifications';
 
 export const AppLayout = () => {
@@ -16,6 +17,7 @@ export const AppLayout = () => {
   const { pages, activePageId, fetchPages } = useNotesStore();
   const { name: workspaceName, fetchWorkspace } = useWorkspaceStore();
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isGraphOpen, setIsGraphOpen] = useState(false);
 
   useEffect(() => {
     fetchPages();
@@ -88,6 +90,16 @@ export const AppLayout = () => {
                 Ctrl+K
               </kbd>
             </button>
+            {/* Botón Graph View Red 2D */}
+            <button
+              onClick={() => setIsGraphOpen(true)}
+              title="Ver mapa de red 2D"
+              className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium flex items-center gap-1.5"
+            >
+              <span>🕸️</span>
+              <span>Red 2D</span>
+            </button>
+
             {/* Botón Compartir / Invitar */}
             <button
               onClick={() => setIsShareOpen(true)}
@@ -123,6 +135,9 @@ export const AppLayout = () => {
 
       {/* Panel de Compartir en LAN */}
       <SharePanel isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />
+
+      {/* Modal de Graph View Red 2D */}
+      <GraphViewModal isOpen={isGraphOpen} onClose={() => setIsGraphOpen(false)} />
     </div>
   );
 };
