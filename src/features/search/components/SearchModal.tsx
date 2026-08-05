@@ -4,36 +4,115 @@ import { useNotesStore } from '@/stores/useNotesStore';
 import { useUiStore } from '@/stores/useUiStore';
 import type { Page } from '@/types/page';
 
+interface CommandAction {
+  id: string;
+  icon: string;
+  label: string;
+  shortcut?: string;
+  action: () => void;
+}
+
 export const SearchModal = () => {
-  const { isSearchOpen, setSearchOpen } = useUiStore();
-  const { pages, setActivePageId } = useNotesStore();
+  const {
+    isSearchOpen,
+    setSearchOpen,
+    theme,
+    setTheme,
+    setHubActive,
+    setProfileOpen,
+  } = useUiStore();
+  const { pages, activePageId, setActivePageId, createPage, deletePage } = useNotesStore();
 
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Convert pages dictionary to array
+  // Lista de acciones del sistema disponibles en la Paleta de Comandos
+  const actions: CommandAction[] = useMemo(
+    () => [
+      {
+        id: 'new-page',
+        icon: '➕',
+        label: 'Crear nueva nota',
+        shortcut: 'Ctrl+N',
+        action: () => {
+          createPage();
+          setSearchOpen(false);
+        },
+      },
+      {
+        id: 'toggle-theme',
+        icon: theme === 'dark' ? '☀️' : '🌙',
+        label: `Cambiar tema a ${theme === 'dark' ? 'Claro' : 'Oscuro'}`,
+        action: () => {
+          setTheme(theme === 'dark' ? 'light' : 'dark');
+          setSearchOpen(false);
+        },
+      },
+      {
+        id: 'go-home',
+        icon: '🏠',
+        label: 'Ir al Inicio (Hub)',
+        action: () => {
+          setHubActive(true);
+          setSearchOpen(false);
+        },
+      },
+      {
+        id: 'open-profile',
+        icon: '👤',
+        label: 'Abrir Ajustes de Perfil',
+        action: () => {
+          setProfileOpen(true);
+          setSearchOpen(false);
+        },
+      },
+      ...(activePageId
+        ? [
+            {
+              id: 'delete-current',
+              icon: '🗑️',
+              label: 'Eliminar nota actual',
+              action: () => {
+                deletePage(activePageId);
+                setSearchOpen(false);
+              },
+            },
+          ]
+        : []),
+    ],
+    [theme, activePageId, createPage, deletePage, setSearchOpen, setTheme, setHubActive, setProfileOpen]
+  );
+
+  // Filtered actions based on query
+  const filteredActions = useMemo(() => {
+    if (!query.trim()) return actions;
+    const q = query.toLowerCase();
+    return actions.filter((a) => a.label.toLowerCase().includes(q));
+  }, [actions, query]);
+
+  // Pages search with Fuse.js
   const pagesList = useMemo(() => Object.values(pages), [pages]);
 
-  // Configure Fuse instance
   const fuse = useMemo(() => {
     return new Fuse(pagesList, {
-      keys: ['title', 'content'],
+      keys: ['title', 'content', 'tags'],
       threshold: 0.3,
       ignoreLocation: true,
     });
   }, [pagesList]);
 
-  // Perform search
-  const results = useMemo(() => {
+  const pageResults = useMemo(() => {
     if (!query.trim()) {
-      return pagesList.slice(0, 10).map((item) => ({ item }));
+      return pagesList.slice(0, 8).map((item) => ({ item }));
     }
     return fuse.search(query);
   }, [fuse, query, pagesList]);
 
-  // Reset state & auto-focus input when modal opens
+  // Combined selectable items list (Actions + Pages)
+  const totalItemsCount = filteredActions.length + pageResults.length;
+
   useEffect(() => {
     if (isSearchOpen) {
       setQuery('');
@@ -44,16 +123,22 @@ export const SearchModal = () => {
     }
   }, [isSearchOpen]);
 
-  // Reset selected index when search results change
   useEffect(() => {
     setSelectedIndex(0);
   }, [query]);
 
   if (!isSearchOpen) return null;
 
-  const handleSelectPage = (pageId: string) => {
-    setActivePageId(pageId);
-    setSearchOpen(false);
+  const executeSelectedItem = (index: number) => {
+    if (index < filteredActions.length) {
+      filteredActions[index].action();
+    } else {
+      const pageIndex = index - filteredActions.length;
+      if (pageResults[pageIndex]) {
+        setActivePageId(pageResults[pageIndex].item.id);
+        setSearchOpen(false);
+      }
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -61,49 +146,45 @@ export const SearchModal = () => {
       setSearchOpen(false);
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (results.length > 0) {
-        setSelectedIndex((prev) => (prev + 1) % results.length);
+      if (totalItemsCount > 0) {
+        setSelectedIndex((prev) => (prev + 1) % totalItemsCount);
       }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      if (results.length > 0) {
-        setSelectedIndex((prev) => (prev - 1 + results.length) % results.length);
+      if (totalItemsCount > 0) {
+        setSelectedIndex((prev) => (prev - 1 + totalItemsCount) % totalItemsCount);
       }
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (results[selectedIndex]) {
-        handleSelectPage(results[selectedIndex].item.id);
-      }
+      executeSelectedItem(selectedIndex);
     }
   };
 
-  // Extract brief content preview text
   const getContentSnippet = (content: string) => {
     if (!content) return '';
-    // Strip common block syntax or HTML if present for clean display
     const cleaned = content.replace(/<[^>]*>/g, ' ').replace(/[{}[\]"']/g, ' ');
-    return cleaned.length > 90 ? cleaned.slice(0, 90) + '...' : cleaned;
+    return cleaned.length > 80 ? cleaned.slice(0, 80) + '...' : cleaned;
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in"
       onClick={() => setSearchOpen(false)}
     >
       <div
-        className="w-full max-w-xl bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh]"
+        className="w-full max-w-xl bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search Header Input */}
+        {/* Header Input */}
         <div className="p-4 border-b border-[var(--border-muted)] flex items-center gap-3 bg-[var(--bg-surface)]">
-          <span className="text-[var(--text-secondary)] text-lg">🔍</span>
+          <span className="text-indigo-400 text-lg">⚡</span>
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Buscar por título o contenido..."
+            placeholder="Buscar nota o ejecutar comando (ej. tema, nueva, inicio)..."
             className="flex-1 bg-transparent text-[var(--text-primary)] placeholder-[var(--text-secondary)] text-sm focus:outline-none"
           />
           {query && (
@@ -119,73 +200,119 @@ export const SearchModal = () => {
           </kbd>
         </div>
 
-        {/* Results List */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1 divide-y divide-[var(--border-muted)]">
-          {results.length > 0 ? (
-            results.map((res, index) => {
-              const page: Page = res.item;
-              const isSelected = index === selectedIndex;
-              const snippet = getContentSnippet(page.content);
-
-              return (
-                <div
-                  key={page.id}
-                  onClick={() => handleSelectPage(page.id)}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                  className={`p-3 rounded-xl transition-all duration-150 cursor-pointer flex items-start gap-3 ${
-                    isSelected
-                      ? 'bg-indigo-600/25 border border-indigo-500/30'
-                      : 'hover:bg-[var(--bg-primary)] border border-transparent'
-                  }`}
-                >
-                  <span className="text-xl shrink-0 pt-0.5">
-                    {page.icon ? page.icon : '📄'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-[var(--text-primary)] truncate">
-                        {page.title || 'Sin título'}
-                      </span>
-                      {page.isFavorite && (
-                        <span className="text-xs text-amber-400">★</span>
-                      )}
+        {/* Results / Commands List */}
+        <div className="flex-1 overflow-y-auto p-2 space-y-3 scrollbar-thin">
+          {/* Section 1: Command Actions */}
+          {filteredActions.length > 0 && (
+            <div className="space-y-1">
+              <div className="px-2 text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase">
+                ⚡ Acciones Rápidas
+              </div>
+              {filteredActions.map((act, idx) => {
+                const isSelected = idx === selectedIndex;
+                return (
+                  <div
+                    key={act.id}
+                    onClick={() => act.action()}
+                    onMouseEnter={() => setSelectedIndex(idx)}
+                    className={`px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center justify-between text-xs font-medium ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-sm">{act.icon}</span>
+                      <span>{act.label}</span>
                     </div>
-                    {snippet && (
-                      <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-2 font-normal leading-relaxed">
-                        {snippet}
-                      </p>
+                    {act.shortcut && (
+                      <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-black/20 rounded opacity-80">
+                        {act.shortcut}
+                      </kbd>
                     )}
                   </div>
-                </div>
-              );
-            })
-          ) : (
+                );
+              })}
+            </div>
+          )}
+
+          {/* Section 2: Notes / Pages Search */}
+          {pageResults.length > 0 && (
+            <div className="space-y-1">
+              <div className="px-2 text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase">
+                📚 Notas ({pageResults.length})
+              </div>
+              {pageResults.map((res, idx) => {
+                const globalIndex = filteredActions.length + idx;
+                const page: Page = res.item;
+                const isSelected = globalIndex === selectedIndex;
+                const snippet = getContentSnippet(page.content);
+
+                return (
+                  <div
+                    key={page.id}
+                    onClick={() => {
+                      setActivePageId(page.id);
+                      setSearchOpen(false);
+                    }}
+                    onMouseEnter={() => setSelectedIndex(globalIndex)}
+                    className={`p-3 rounded-xl transition-all cursor-pointer flex items-start gap-3 ${
+                      isSelected
+                        ? 'bg-indigo-600/25 border border-indigo-500/40 text-[var(--text-primary)]'
+                        : 'hover:bg-[var(--bg-hover)] border border-transparent text-[var(--text-primary)]'
+                    }`}
+                  >
+                    <span className="text-xl shrink-0 pt-0.5">
+                      {page.icon ? page.icon : '📄'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold truncate">
+                          {page.title || 'Sin título'}
+                        </span>
+                        {page.isFavorite && (
+                          <span className="text-xs text-amber-400">★</span>
+                        )}
+                      </div>
+                      {snippet && (
+                        <p className="text-xs text-[var(--text-secondary)] mt-0.5 line-clamp-1 font-normal leading-relaxed">
+                          {snippet}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {totalItemsCount === 0 && (
             <div className="p-8 text-center text-[var(--text-secondary)] text-sm">
-              No se encontraron notas que coincidan con &ldquo;{query}&rdquo;
+              No se encontraron comandos ni notas que coincidan con &ldquo;{query}&rdquo;
             </div>
           )}
         </div>
 
         {/* Footer shortcuts hint */}
-        <div className="px-4 py-2 bg-[var(--bg-primary)] border-t border-[var(--border-muted)] flex items-center justify-between text-[11px] text-[var(--text-secondary)] font-mono">
+        <div className="px-4 py-2.5 bg-[var(--bg-primary)] border-t border-[var(--border-muted)] flex items-center justify-between text-[11px] text-[var(--text-secondary)] font-mono">
           <div className="flex items-center gap-3">
             <span>
-              <kbd className="px-1 py-0.5 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded text-[var(--text-secondary)]">
+              <kbd className="px-1 py-0.5 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded">
                 ↑
               </kbd>{' '}
-              <kbd className="px-1 py-0.5 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded text-[var(--text-secondary)]">
+              <kbd className="px-1 py-0.5 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded">
                 ↓
               </kbd>{' '}
               Navegar
             </span>
             <span>
-              <kbd className="px-1.5 py-0.5 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded text-[var(--text-secondary)]">
+              <kbd className="px-1.5 py-0.5 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded">
                 ↵
               </kbd>{' '}
-              Abrir
+              Ejecutar / Abrir
             </span>
           </div>
-          <span>Fuse.js search</span>
+          <span>Paleta de Comandos Ctrl+K</span>
         </div>
       </div>
     </div>

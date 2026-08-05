@@ -4,6 +4,8 @@ export interface Page {
   icon?: string | null;
   coverImage?: string | null;
   content: string;
+  parentId?: string | null;
+  tags?: string[];
   isFavorite: boolean;
   createdAt: string | Date;
   updatedAt: string | Date;

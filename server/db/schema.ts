@@ -6,6 +6,8 @@ export const pages = sqliteTable('pages', {
   icon: text('icon'),
   coverImage: text('cover_image'),
   content: text('content').notNull().default(''),
+  parentId: text('parent_id'),
+  tags: text('tags').notNull().default('[]'),
   isFavorite: integer('is_favorite', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),

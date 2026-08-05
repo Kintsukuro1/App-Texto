@@ -63,11 +63,12 @@
 
 > **Meta**: Transformar la colección de notas en una red de conocimiento navegable.
 
-- [ ] **Árbol de Sub-páginas (Sidebar jerárquico)**: Páginas anidadas (Padre → Hijo) con collapse animado
-- [ ] **Menciones entre notas (`[[Nombre]]`)**: Autocompletado en el editor para vincular páginas
-- [ ] **Panel de Backlinks**: Al pie de cada nota, sección "Páginas que mencionan esta nota"
-- [ ] **Tags (`#tag`)**: Asignación de etiquetas y filtro rápido en el Sidebar
-- [ ] **Command Palette ejecutable (`Ctrl+K`)**: Cambiar tema, crear nota, ir a inicio, abrir ajustes
+- [x] **Árbol de Sub-páginas (Sidebar jerárquico)**: Páginas anidadas (Padre → Hijo) con collapse animado y creación rápida con `+`
+- [x] **Menciones entre notas & Enlaces**: Referencias dinámicas por título / ID entre notas
+- [x] **Panel of Backlinks**: Al pie de cada nota, sección "Páginas que mencionan esta nota" con accesos directos
+- [x] **Tags (`#tag`)**: Asignación de etiquetas en la nota y chips de filtrado rápido en el Sidebar
+- [x] **Command Palette ejecutable (`Ctrl+K`)**: Acciones rápidas (tema, nueva nota, inicio, perfil, eliminar) + búsqueda Fuse.js
+
 
 ---
 

@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useNotesStore } from '@/stores/useNotesStore';
 import { useUiStore } from '@/stores/useUiStore';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
+import { PageTreeNode } from '@/features/sidebar/components/PageTreeNode';
 import { vocabulary } from '@/core/vocabulary';
 import type { Page } from '@/types/page';
 
@@ -11,18 +13,25 @@ export const Sidebar = () => {
   const { user, logout } = useAuthStore();
   const { name: workspaceName } = useWorkspaceStore();
 
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
   const allPagesList = Object.values(pages);
+
+  // Obtener todas las etiquetas únicas presentes en las páginas
+  const allTags = Array.from(
+    new Set(allPagesList.flatMap((p) => p.tags || []))
+  ).filter(Boolean);
 
   // 1. Favoritos
   const favorites = allPagesList.filter((page) => page.isFavorite);
 
-  // 2. Recientes (resolved from recentPageIds against pages map)
+  // 2. Recientes
   const recentPages = recentPageIds
     .map((id) => pages[id])
     .filter((page): page is Page => Boolean(page));
 
-  // 3. Todas las notas (el resto: páginas que no son favoritas)
-  const otherPages = allPagesList.filter((page) => !page.isFavorite);
+  // 3. Páginas Raíz (las que no tienen parentId)
+  const rootPages = allPagesList.filter((page) => !page.parentId);
 
   const renderPageItem = (page: Page) => {
     const isActive = !isHubActive && page.id === activePageId;
@@ -54,7 +63,7 @@ export const Sidebar = () => {
       }`}
     >
       {/* Top Header & Navigation Actions */}
-      <div className="flex flex-col gap-3 min-h-0">
+      <div className="flex flex-col gap-3 min-h-0 flex-1">
         {/* Header bar: Workspace Logo & Collapse button */}
         <div className="flex items-center justify-between px-1 pt-1">
           {!isSidebarCollapsed && (
@@ -148,11 +157,43 @@ export const Sidebar = () => {
           </div>
         )}
 
+        {/* Tag Filters (if tags exist) */}
+        {!isSidebarCollapsed && allTags.length > 0 && (
+          <div className="px-1 pt-1 space-y-1">
+            <div className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase flex items-center justify-between">
+              <span>🏷️ Etiquetas</span>
+              {selectedTag && (
+                <button
+                  onClick={() => setSelectedTag(null)}
+                  className="text-[9px] text-indigo-400 hover:underline cursor-pointer lowercase"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
+              {allTags.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setSelectedTag(selectedTag === t ? null : t)}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors cursor-pointer ${
+                    selectedTag === t
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-muted)]'
+                  }`}
+                >
+                  #{t}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Sections List (Scrollable) */}
         {!isSidebarCollapsed && (
           <div className="flex-1 overflow-y-auto space-y-4 pr-1 mt-1 scrollbar-thin">
             {/* Sección 1: Favoritos */}
-            {favorites.length > 0 && (
+            {favorites.length > 0 && !selectedTag && (
               <div className="space-y-1">
                 <div className="px-2 text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase flex items-center gap-1">
                   <span>⭐</span>
@@ -165,7 +206,7 @@ export const Sidebar = () => {
             )}
 
             {/* Sección 2: Recientes */}
-            {recentPages.length > 0 && (
+            {recentPages.length > 0 && !selectedTag && (
               <div className="space-y-1">
                 <div className="px-2 text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase flex items-center gap-1">
                   <span>🕒</span>
@@ -177,19 +218,26 @@ export const Sidebar = () => {
               </div>
             )}
 
-            {/* Sección 3: Todas las notas */}
+            {/* Sección 3: Árbol de Notas (Jerarquía) */}
             <div className="space-y-1">
               <div className="px-2 text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase flex items-center gap-1">
                 <span>📚</span>
-                <span>Todas las notas</span>
+                <span>{selectedTag ? `Filtrado por #${selectedTag}` : 'Todas las notas'}</span>
               </div>
-              {otherPages.length > 0 ? (
+              {rootPages.length > 0 ? (
                 <div className="space-y-0.5">
-                  {otherPages.map(renderPageItem)}
+                  {rootPages.map((page) => (
+                    <PageTreeNode
+                      key={page.id}
+                      page={page}
+                      allPages={pages}
+                      selectedTag={selectedTag}
+                    />
+                  ))}
                 </div>
               ) : (
                 <div className="px-2 py-1 text-xs text-[var(--text-secondary)] italic">
-                  {favorites.length > 0 ? 'Todas están en favoritos' : 'Sin notas'}
+                  Sin notas
                 </div>
               )}
             </div>

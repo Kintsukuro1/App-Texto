@@ -3,6 +3,7 @@ import type { Page } from '@/types/page';
 import { useNotesStore } from '@/stores/useNotesStore';
 import { Editor } from '@/features/editor/components/Editor';
 import { usePresence } from '@/features/editor/hooks/usePresence';
+import { BacklinksPanel } from './BacklinksPanel';
 import type { HocuspocusProvider } from '@hocuspocus/provider';
 import { API_BASE_URL } from '@/core/config';
 
@@ -265,6 +266,45 @@ export const PageView = ({ page }: PageViewProps) => {
           />
         </div>
 
+        {/* Tags Section */}
+        <div className="flex items-center flex-wrap gap-1.5 pt-1">
+          {(page.tags || []).map((tag) => (
+            <span
+              key={tag}
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/15 text-indigo-300 border border-indigo-500/30"
+            >
+              <span>#{tag}</span>
+              <button
+                onClick={() => {
+                  const nextTags = (page.tags || []).filter((t) => t !== tag);
+                  updatePage(page.id, { tags: nextTags });
+                }}
+                className="hover:text-rose-400 transition-colors text-[10px] ml-0.5 cursor-pointer"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+
+          {/* Add Tag Input / Button */}
+          <button
+            onClick={() => {
+              const tag = prompt('Nombre de la etiqueta (ej. trabajo, idea):');
+              if (tag && tag.trim()) {
+                const cleaned = tag.trim().replace(/^#/, '').toLowerCase();
+                const existing = page.tags || [];
+                if (!existing.includes(cleaned)) {
+                  updatePage(page.id, { tags: [...existing, cleaned] });
+                }
+              }
+            }}
+            className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--bg-surface)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-muted)] transition-colors cursor-pointer flex items-center gap-1"
+          >
+            <span>🏷️</span>
+            <span>+ Etiqueta</span>
+          </button>
+        </div>
+
         {/* Rich Text Editor */}
         <div className="pt-4 border-t border-[var(--border-muted)]">
           <Editor
@@ -277,6 +317,9 @@ export const PageView = ({ page }: PageViewProps) => {
             onProviderReady={(prov) => setCollabProvider(prov)}
           />
         </div>
+
+        {/* Backlinks Panel */}
+        <BacklinksPanel currentPage={page} />
       </div>
     </div>
   );

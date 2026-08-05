@@ -9,7 +9,8 @@ interface NotesState {
   recentPageIds: string[];
   isLoading: boolean;
   fetchPages: () => Promise<void>;
-  createPage: (title?: string) => Promise<Page | null>;
+  createPage: (title?: string, parentId?: string | null) => Promise<Page | null>;
+  createSubPage: (parentId: string, title?: string) => Promise<Page | null>;
   updatePage: (id: string, changes: Partial<Page>) => Promise<void>;
   deletePage: (id: string) => Promise<void>;
   setActivePageId: (id: string | null) => void;
@@ -69,13 +70,13 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     }
   },
 
-  createPage: async (title = 'Sin título') => {
+  createPage: async (title = 'Sin título', parentId: string | null = null) => {
     try {
       const res = await fetch(API_BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ title, content: '', isFavorite: false }),
+        body: JSON.stringify({ title, content: '', parentId, isFavorite: false, tags: [] }),
       });
 
       if (res.ok) {
@@ -90,6 +91,10 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     } catch {
       return null;
     }
+  },
+
+  createSubPage: async (parentId: string, title = 'Sin título') => {
+    return get().createPage(title, parentId);
   },
 
   toggleFavorite: async (id: string) => {
