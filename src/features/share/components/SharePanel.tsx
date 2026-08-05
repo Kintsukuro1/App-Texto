@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { useNotesStore } from '@/stores/useNotesStore';
 
 interface SharePanelProps {
   isOpen: boolean;
@@ -19,6 +20,15 @@ export const SharePanel = ({ isOpen, onClose }: SharePanelProps) => {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'invite' | 'collaborators'>('invite');
   const { user } = useAuthStore();
+  const { pages, activePageId } = useNotesStore();
+
+  const activePage = activePageId ? pages[activePageId] : null;
+
+  const inviteUrl = serverInfo
+    ? activePageId
+      ? `${serverInfo.lanURL}?invite=${activePageId}`
+      : serverInfo.lanURL
+    : '';
 
   useEffect(() => {
     if (!isOpen) return;
@@ -42,8 +52,8 @@ export const SharePanel = ({ isOpen, onClose }: SharePanelProps) => {
   }, [isOpen]);
 
   const handleCopy = () => {
-    if (!serverInfo) return;
-    navigator.clipboard.writeText(serverInfo.lanURL);
+    if (!inviteUrl) return;
+    navigator.clipboard.writeText(inviteUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -135,15 +145,15 @@ export const SharePanel = ({ isOpen, onClose }: SharePanelProps) => {
                       style={{ background: '#fff' }}
                     >
                       <QRCodeSVG
-                        value={serverInfo.lanURL}
+                        value={inviteUrl}
                         size={150}
                         bgColor="#ffffff"
                         fgColor="#1a1d23"
                         level="M"
                       />
                     </div>
-                    <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
-                      Escanea este código QR desde el celular o navegador
+                    <p className="text-xs text-center font-medium" style={{ color: 'var(--text-secondary)' }}>
+                      {activePage ? `Invitación a nota: "${activePage.title}"` : 'Invitación a Workspace'}
                     </p>
                   </div>
 
@@ -152,15 +162,22 @@ export const SharePanel = ({ isOpen, onClose }: SharePanelProps) => {
                     className="rounded-xl p-3.5 space-y-2"
                     style={{ background: 'var(--bg-tertiary)' }}
                   >
-                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-                      Enlace de invitación LAN
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                        Enlace de invitación directo:
+                      </p>
+                      {activePage && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          {activePage.title}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       <code
-                        className="flex-1 text-xs font-mono truncate"
+                        className="flex-1 text-xs font-mono truncate select-all"
                         style={{ color: 'var(--accent-primary)' }}
                       >
-                        {serverInfo.lanURL}
+                        {inviteUrl}
                       </code>
                       <button
                         onClick={handleCopy}

@@ -14,7 +14,7 @@ import { requestNotificationPermission } from '@/core/notifications';
 
 export const AppLayout = () => {
   const { isSidebarCollapsed, toggleSidebar, setSearchOpen, isHubActive, theme, fontPreset } = useUiStore();
-  const { pages, activePageId, fetchPages } = useNotesStore();
+  const { pages, activePageId, fetchPages, fetchPageById } = useNotesStore();
   const { name: workspaceName, fetchWorkspace } = useWorkspaceStore();
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isGraphOpen, setIsGraphOpen] = useState(false);
@@ -23,7 +23,14 @@ export const AppLayout = () => {
     fetchPages();
     fetchWorkspace();
     requestNotificationPermission();
-  }, [fetchPages, fetchWorkspace]);
+
+    // Procesar enlace de invitación (?invite=PAGE_ID)
+    const params = new URLSearchParams(window.location.search);
+    const invitePageId = params.get('invite');
+    if (invitePageId && invitePageId !== 'workspace') {
+      fetchPageById(invitePageId);
+    }
+  }, [fetchPages, fetchWorkspace, fetchPageById]);
 
   useEffect(() => {
     const root = document.documentElement;

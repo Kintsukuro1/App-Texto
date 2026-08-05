@@ -11,6 +11,7 @@ interface NotesState {
   isLoading: boolean;
   error: string | null;
   fetchPages: () => Promise<void>;
+  fetchPageById: (id: string) => Promise<Page | null>;
   createPage: (title?: string, content?: string, parentId?: string | null) => Promise<Page | null>;
   createSubPage: (parentId: string, title?: string) => Promise<Page | null>;
   updatePage: (id: string, changes: Partial<Page>) => Promise<void>;
@@ -75,6 +76,28 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     } catch {
       set({ isLoading: false });
     }
+  },
+
+  fetchPageById: async (id: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const page: Page = await res.json();
+        set((state) => ({
+          pages: { ...state.pages, [page.id]: page },
+        }));
+        get().setActivePageId(page.id);
+        useUiStore.getState().setHubActive(false);
+        return page;
+      }
+    } catch (err) {
+      console.error('Error al obtener la página de invitación:', err);
+    }
+    return null;
   },
 
   createPage: async (title = 'Sin título', content = '', parentId: string | null = null) => {
