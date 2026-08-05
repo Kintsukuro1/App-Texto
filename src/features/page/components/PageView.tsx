@@ -4,6 +4,7 @@ import { useNotesStore } from '@/stores/useNotesStore';
 import { Editor } from '@/features/editor/components/Editor';
 import { usePresence } from '@/features/editor/hooks/usePresence';
 import type { HocuspocusProvider } from '@hocuspocus/provider';
+import { API_BASE_URL } from '@/core/config';
 
 interface PageViewProps {
   page: Page;
@@ -17,11 +18,13 @@ export const PageView = ({ page }: PageViewProps) => {
   const [coverImage, setCoverImage] = useState(page.coverImage || '');
   const [showCoverInput, setShowCoverInput] = useState(false);
   const [showIconInput, setShowIconInput] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
 
   const [collabProvider, setCollabProvider] = useState<HocuspocusProvider | null>(null);
   const presenceUsers = usePresence(collabProvider);
 
   const titleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setTitle(page.title);
@@ -47,6 +50,34 @@ export const PageView = ({ page }: PageViewProps) => {
   const handleCoverChange = (newCover: string) => {
     setCoverImage(newCover);
     updatePage(page.id, { coverImage: newCover.trim() ? newCover : null });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingCover(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`${API_BASE_URL}/api/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const fullUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
+        handleCoverChange(fullUrl);
+        setShowCoverInput(false);
+      }
+    } catch (err) {
+      console.error('Error al subir imagen', err);
+    } finally {
+      setIsUploadingCover(false);
+    }
   };
 
   return (
@@ -81,32 +112,61 @@ export const PageView = ({ page }: PageViewProps) => {
 
       {/* Main Page Container */}
       <div className="max-w-4xl w-full mx-auto px-8 sm:px-12 pt-8 pb-16 space-y-6 flex-1">
-        {/* Cover Input Field Modal/Bar if requested */}
+        {/* Cover Input Field Modal/Bar */}
         {showCoverInput && (
-          <div className="p-3 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-xl space-y-2 animate-fade-in">
-            <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">
-              <span>URL de la imagen de portada:</span>
+          <div className="p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-xl space-y-3 animate-fade-in shadow-lg">
+            <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] font-medium">
+              <span>Portada de la página (Imagen / GIF)</span>
               <button
                 onClick={() => setShowCoverInput(false)}
-                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               >
                 ✕
               </button>
             </div>
-            <div className="flex gap-2">
+
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
-                type="url"
-                value={coverImage}
-                onChange={(e) => handleCoverChange(e.target.value)}
-                placeholder="https://images.unsplash.com/photo-..."
-                className="flex-1 px-3 py-1.5 text-xs bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-indigo-500"
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
               />
               <button
-                onClick={() => setShowCoverInput(false)}
-                className="px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingCover}
+                className="px-3.5 py-2 text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
               >
-                Guardar
+                {isUploadingCover ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Subiendo...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📁</span>
+                    <span>Subir desde dispositivo</span>
+                  </>
+                )}
               </button>
+
+              <div className="flex-1 flex gap-2">
+                <input
+                  type="url"
+                  value={coverImage}
+                  onChange={(e) => handleCoverChange(e.target.value)}
+                  placeholder="O pega una URL: https://..."
+                  className="flex-1 px-3 py-2 text-xs bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-indigo-500"
+                />
+                <button
+                  onClick={() => setShowCoverInput(false)}
+                  className="px-3 py-2 text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] rounded-lg transition-colors"
+                >
+                  Listo
+                </button>
+              </div>
             </div>
           </div>
         )}

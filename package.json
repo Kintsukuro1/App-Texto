@@ -26,6 +26,8 @@
     "@blocknote/shadcn": "^0.52.1",
     "@fastify/cookie": "^11.1.2",
     "@fastify/cors": "^11.3.0",
+    "@fastify/multipart": "^10.1.0",
+    "@fastify/static": "^10.1.2",
     "@hocuspocus/extension-sqlite": "^4.5.0",
     "@hocuspocus/provider": "^4.5.0",
     "@hocuspocus/server": "^4.5.0",

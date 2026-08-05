@@ -6,6 +6,7 @@ import * as Y from 'yjs';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useUiStore } from '@/stores/useUiStore';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { API_BASE_URL } from '@/core/config';
 import '@blocknote/shadcn/style.css';
 
 interface EditorProps {
@@ -82,6 +83,24 @@ export const Editor = ({
     return undefined;
   };
 
+  const handleUploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_BASE_URL}/api/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error('Error al subir la imagen');
+    }
+
+    const data = await res.json();
+    return data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
+  };
+
   // Crear editor de BlockNote con o sin colaboración
   const editor = useCreateBlockNote(
     provider && ydoc
@@ -95,9 +114,11 @@ export const Editor = ({
             },
             showCursorLabels: 'activity',
           },
+          uploadFile: handleUploadFile,
         }
       : {
           initialContent: parseInitialContent(),
+          uploadFile: handleUploadFile,
         },
     [provider, ydoc, user?.username, user?.color]
   );

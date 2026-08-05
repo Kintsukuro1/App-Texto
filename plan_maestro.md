@@ -46,11 +46,15 @@
 - [x] **Auth WebSocket mejorada**: Token pasado directamente al provider (sin depender de cookies entre puertos)
 - [ ] Build Script: `electron-builder` → genera `.exe` instalable para Windows *(pendiente validar)*
 
-### 2.2 Experiencia LAN (Compartir sin Configuración)
+### 2.2 Experiencia LAN & Servidor Web
 - [x] **Detección automática de IP local**: `getLocalIP()` en el main process
-- [ ] **Panel "Compartir"**: Muestra `http://[IP]:3001` + código QR para que otros escaneen y entren desde su navegador
-- [ ] **System Tray**: La app corre en segundo plano con ícono en la bandeja. Menú: Abrir, Estado del servidor, Salir
+- [x] **Panel "Compartir"**: Muestra `http://[IP]:3001` + código QR para que otros escaneen y entren desde su navegador
+- [x] **Servidor de archivos estáticos**: Fastify sirve la app SPA (`dist`) en `/` con fallback index.html (sin 404 al abrir en navegador)
+- [x] **Subida de Imágenes / GIFs**: Endpoint `/api/upload` con `@fastify/multipart` que guarda archivos locales en `DATA_DIR/uploads/`
+- [x] **Integración con Editor y Portadas**: Subir imágenes/GIFs desde PC o teléfono tanto en portadas/banners como dentro de los bloques de BlockNote
+- [x] **System Tray**: La app corre en segundo plano con ícono en la bandeja. Menú: Abrir, Estado del servidor, Salir
 - [ ] **Arranque con Windows** (opcional): Checkbox en Ajustes para iniciar el servidor al encender el PC
+
 
 
 ---
