@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Page } from '@/types/page';
 import { API_BASE_URL, getAuthHeaders } from '@/core/config';
 import { useUiStore } from '@/stores/useUiStore';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
 interface NotesState {
   pages: Record<string, Page>;
@@ -43,7 +44,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     set({ isLoading: true });
     try {
       const res = await fetch(API_BASE, {
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
       });
       if (res.ok) {
@@ -77,7 +78,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       const res = await fetch(API_BASE, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
         body: JSON.stringify({ title, content: '', parentId, isFavorite: false, tags: [] }),
       });
@@ -119,7 +120,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       await fetch(`${API_BASE}/${id}`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
         body: JSON.stringify({ isFavorite: newFavoriteState }),
       });
@@ -146,7 +147,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       await fetch(`${API_BASE}/${id}`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
         body: JSON.stringify(changes),
       });
@@ -175,7 +176,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       await fetch(`${API_BASE}/${id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
       });
     } catch (err) {

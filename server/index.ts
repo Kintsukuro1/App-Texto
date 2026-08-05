@@ -71,7 +71,6 @@ export async function startFastify(port: number = PORT): Promise<void> {
     await server.register(fastifyStatic, {
       root: distDir,
       prefix: '/',
-      decorateReply: false,
     });
 
     // Fallback SPA: Cualquier ruta que no sea de la API o un archivo estático devuelve index.html

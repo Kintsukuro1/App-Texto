@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { API_BASE_URL, getAuthHeaders } from '@/core/config';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
 interface WorkspaceState {
   name: string;
@@ -21,7 +22,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     try {
       const res = await fetch(WORKSPACE_API, {
         method: 'GET',
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
       });
 
@@ -41,7 +42,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     try {
       const res = await fetch(WORKSPACE_API, {
         method: 'PUT',
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
         body: JSON.stringify({ name }),
       });
