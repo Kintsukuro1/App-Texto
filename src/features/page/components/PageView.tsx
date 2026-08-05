@@ -4,6 +4,7 @@ import { useNotesStore } from '@/stores/useNotesStore';
 import { Editor } from '@/features/editor/components/Editor';
 import { usePresence } from '@/features/editor/hooks/usePresence';
 import { BacklinksPanel } from './BacklinksPanel';
+import { PageIcon } from '@/components/common/PageIcon';
 import type { HocuspocusProvider } from '@hocuspocus/provider';
 import { API_BASE_URL } from '@/core/config';
 
@@ -20,12 +21,14 @@ export const PageView = ({ page }: PageViewProps) => {
   const [showCoverInput, setShowCoverInput] = useState(false);
   const [showIconInput, setShowIconInput] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
 
   const [collabProvider, setCollabProvider] = useState<HocuspocusProvider | null>(null);
   const presenceUsers = usePresence(collabProvider);
 
   const titleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const iconFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setTitle(page.title);
@@ -227,19 +230,114 @@ export const PageView = ({ page }: PageViewProps) => {
           </div>
         </div>
 
-        {/* Icon Display / Input */}
+        {/* Icon Display / Input Controls */}
         {(icon || showIconInput) && (
-          <div className="flex items-center gap-3">
-            <input
-              type="text"
-              maxLength={4}
-              value={icon}
-              onChange={(e) => handleIconChange(e.target.value)}
-              placeholder="📄"
-              className="w-16 h-16 text-4xl text-center bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl focus:outline-none focus:border-indigo-500 text-[var(--text-primary)]"
-            />
-            {showIconInput && !icon && (
-              <span className="text-xs text-[var(--text-secondary)]">Escribe o pega un emoji</span>
+          <div className="space-y-3 animate-fade-in">
+            <div className="flex items-center gap-4">
+              <div
+                onClick={() => setShowIconInput(!showIconInput)}
+                className="w-16 h-16 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-muted)] flex items-center justify-center text-4xl cursor-pointer hover:border-indigo-500 transition-all overflow-hidden shadow-sm shrink-0"
+              >
+                <PageIcon icon={icon} className="w-full h-full object-cover" fallback="📄" />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={() => setShowIconInput(!showIconInput)}
+                  className="text-xs font-medium text-[var(--text-primary)] hover:text-indigo-400 text-left transition-colors cursor-pointer"
+                >
+                  {showIconInput ? 'Ocultar opciones' : 'Cambiar ícono / GIF'}
+                </button>
+                <button
+                  onClick={() => handleIconChange('')}
+                  className="text-[11px] text-rose-400 hover:text-rose-300 text-left transition-colors cursor-pointer"
+                >
+                  Quitar ícono
+                </button>
+              </div>
+            </div>
+
+            {/* Subpanel de selección de Ícono (Emoji, Subir Imagen/GIF o URL) */}
+            {showIconInput && (
+              <div className="p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-xl space-y-3 animate-fade-in shadow-md max-w-lg">
+                <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] font-medium">
+                  <span>Seleccionar ícono de página (Emoji, Imagen o GIF)</span>
+                  <button
+                    onClick={() => setShowIconInput(false)}
+                    className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="file"
+                    ref={iconFileInputRef}
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsUploadingIcon(true);
+                      try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        const res = await fetch(`${API_BASE_URL}/api/upload`, {
+                          method: 'POST',
+                          credentials: 'include',
+                          body: formData,
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          const fullUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
+                          handleIconChange(fullUrl);
+                          setShowIconInput(false);
+                        }
+                      } catch (err) {
+                        console.error('Error al subir ícono:', err);
+                      } finally {
+                        setIsUploadingIcon(false);
+                      }
+                    }}
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => iconFileInputRef.current?.click()}
+                    disabled={isUploadingIcon}
+                    className="px-3 py-2 text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                  >
+                    {isUploadingIcon ? (
+                      <>
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Subiendo...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>📁</span>
+                        <span>Subir Imagen / GIF</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="flex-1 flex gap-2">
+                    <input
+                      type="text"
+                      value={icon}
+                      onChange={(e) => handleIconChange(e.target.value)}
+                      placeholder="Emoji (😀) o URL de imagen..."
+                      className="flex-1 px-3 py-2 text-xs bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-indigo-500"
+                    />
+                    <button
+                      onClick={() => setShowIconInput(false)}
+                      className="px-3 py-2 text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] rounded-lg transition-colors"
+                    >
+                      Listo
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         )}

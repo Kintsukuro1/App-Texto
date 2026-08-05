@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Page } from '@/types/page';
 import { useNotesStore } from '@/stores/useNotesStore';
 import { ContextMenu, type ContextMenuItem } from '@/components/common/ContextMenu';
+import { PageIcon } from '@/components/common/PageIcon';
 
 interface PageTreeNodeProps {
   page: Page;
@@ -188,7 +189,7 @@ export const PageTreeNode = ({
           )}
 
           {/* Icon or default document icon */}
-          <span className="text-sm shrink-0">{page.icon || '📄'}</span>
+          <PageIcon icon={page.icon} className="w-4 h-4 rounded object-cover shrink-0" fallback="📄" />
 
           {/* Title */}
           <span className="truncate">{page.title || 'Sin título'}</span>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Fuse from 'fuse.js';
 import { useNotesStore } from '@/stores/useNotesStore';
 import { useUiStore } from '@/stores/useUiStore';
+import { PageIcon } from '@/components/common/PageIcon';
 import type { Page } from '@/types/page';
 
 interface CommandAction {
@@ -262,9 +263,7 @@ export const SearchModal = () => {
                         : 'hover:bg-[var(--bg-hover)] border border-transparent text-[var(--text-primary)]'
                     }`}
                   >
-                    <span className="text-xl shrink-0 pt-0.5">
-                      {page.icon ? page.icon : '📄'}
-                    </span>
+                    <PageIcon icon={page.icon} className="w-5 h-5 rounded object-cover shrink-0 mt-0.5" fallback="📄" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-sm font-semibold truncate">

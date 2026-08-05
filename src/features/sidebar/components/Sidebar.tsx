@@ -4,6 +4,7 @@ import { useUiStore } from '@/stores/useUiStore';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { PageTreeNode } from '@/features/sidebar/components/PageTreeNode';
+import { PageIcon } from '@/components/common/PageIcon';
 import { vocabulary } from '@/core/vocabulary';
 import type { Page } from '@/types/page';
 
@@ -90,9 +91,7 @@ export const Sidebar = () => {
         }`}
         title={page.title || 'Sin título'}
       >
-        <span className="shrink-0 text-sm">
-          {page.icon ? page.icon : '📄'}
-        </span>
+        <PageIcon icon={page.icon} className="w-4 h-4 rounded object-cover shrink-0" fallback="📄" />
         <span className="truncate flex-1">
           {page.title || 'Sin título'}
         </span>

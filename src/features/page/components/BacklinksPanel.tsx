@@ -1,4 +1,5 @@
 import { useNotesStore } from '@/stores/useNotesStore';
+import { PageIcon } from '@/components/common/PageIcon';
 import type { Page } from '@/types/page';
 
 interface BacklinksPanelProps {
@@ -43,7 +44,7 @@ export const BacklinksPanel = ({ currentPage }: BacklinksPanelProps) => {
             className="text-left p-3 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-hover)] border border-[var(--border-muted)] hover:border-indigo-500/40 transition-all cursor-pointer space-y-1 group"
           >
             <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-primary)] group-hover:text-indigo-400 transition-colors">
-              <span className="text-sm">{page.icon || '📄'}</span>
+              <PageIcon icon={page.icon} className="w-4 h-4 rounded object-cover shrink-0" fallback="📄" />
               <span className="truncate">{page.title || 'Sin título'}</span>
             </div>
             <p className="text-[11px] text-[var(--text-muted)] line-clamp-2 leading-relaxed">
