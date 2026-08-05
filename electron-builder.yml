@@ -1,0 +1,41 @@
+appId: com.notionlocal.app
+productName: Notion Local
+copyright: Copyright © 2026
+
+directories:
+  output: release
+  buildResources: public
+
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - node_modules/**/*
+  - package.json
+
+extraResources:
+  - from: drizzle
+    to: drizzle
+    filter:
+      - "**/*"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: public/favicon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  installerIcon: public/favicon.ico
+  uninstallerIcon: public/favicon.ico
+  installerHeaderIcon: public/favicon.ico
+  shortcutName: Notion Local
+
+asar: true
+
+# Módulos nativos que necesitan ser recompilados para Electron
+npmRebuild: true

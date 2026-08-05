@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1785814769918,
+      "tag": "0000_curved_phalanx",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1785815196790,
+      "tag": "0001_wet_ulik",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1785815953031,
+      "tag": "0002_great_rogue",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1785883213565,
+      "tag": "0003_tiny_sleepwalker",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1785884508108,
+      "tag": "0004_high_thaddeus_ross",
+      "breakpoints": true
+    }
+  ]
+}

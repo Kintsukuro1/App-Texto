@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@theme {
+  --color-popover: var(--bg-surface);
+  --color-popover-foreground: var(--text-primary);
+  --color-card: var(--bg-surface);
+  --color-card-foreground: var(--text-primary);
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --color-border: var(--border-muted);
+  --color-muted: var(--bg-surface);
+  --color-muted-foreground: var(--text-secondary);
+  --color-secondary: var(--bg-surface);
+  --color-secondary-foreground: var(--text-primary);
+}
+
+:root {
+  --bg-primary: #020617;      /* slate-950 */
+  --bg-surface: #0f172a;      /* slate-900 */
+  --border-muted: #1e293b;    /* slate-800 */
+  --text-primary: #f1f5f9;    /* slate-100 */
+  --text-secondary: #94a3b8;  /* slate-400 */
+  --font-heading: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Variables CSS para BlockNote */
+  --bn-colors-editor-background: transparent;
+  --bn-colors-editor-text: var(--text-primary);
+  --bn-colors-menu-background: var(--bg-surface);
+  --bn-colors-menu-text: var(--text-primary);
+  --bn-colors-hovered-background: var(--border-muted);
+  --bn-colors-hovered-text: var(--text-primary);
+  --bn-colors-border: var(--border-muted);
+  --bn-colors-shadow: rgba(0, 0, 0, 0.5);
+  --bn-colors-tooltip-background: var(--bg-surface);
+  --bn-colors-tooltip-text: var(--text-primary);
+}
+
+.light {
+  --bg-primary: #ffffff;
+  --bg-surface: #f8fafc;      /* slate-50 */
+  --border-muted: #e2e8f0;    /* slate-200 */
+  --text-primary: #0f172a;    /* slate-900 */
+  --text-secondary: #475569;  /* slate-600 */
+
+  /* Variables CSS para BlockNote en modo claro */
+  --bn-colors-editor-background: transparent;
+  --bn-colors-editor-text: var(--text-primary);
+  --bn-colors-menu-background: var(--bg-surface);
+  --bn-colors-menu-text: var(--text-primary);
+  --bn-colors-hovered-background: var(--border-muted);
+  --bn-colors-hovered-text: var(--text-primary);
+  --bn-colors-border: var(--border-muted);
+  --bn-colors-shadow: rgba(0, 0, 0, 0.1);
+  --bn-colors-tooltip-background: var(--bg-surface);
+  --bn-colors-tooltip-text: var(--text-primary);
+}
+
+[data-font="mono"] {
+  --font-heading: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* ==========================================================================
+   BlockNote Editor Overrides (Fondo transparente + Menú Slash con contenedor)
+   ========================================================================== */
+
+/* 1. Eliminar el recuadro gris del contenedor del editor */
+.bn-container,
+.bn-editor,
+.bn-root {
+  background-color: transparent !important;
+  --bn-colors-editor-background: transparent !important;
+}
+
+.bn-editor {
+  padding-inline: 0 !important;
+}
+
+/* 2. Menú desplegable Slash "/" y Popovers flotantes de BlockNote */
+.bn-menu-dropdown,
+[data-floating-ui-focusable],
+[data-radix-popper-content-wrapper] > div,
+.bn-popover,
+.bn-shadcn [role="menu"],
+.bn-shadcn [role="listbox"] {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-muted) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Hover y foco en items del menú slash */
+.bn-menu-dropdown [role="menuitem"]:hover,
+.bn-menu-dropdown [role="option"]:hover,
+[data-floating-ui-focusable] [role="menuitem"]:hover,
+[data-floating-ui-focusable] [role="option"]:hover,
+.bn-shadcn [role="menuitem"][data-highlighted],
+.bn-shadcn [role="option"][data-highlighted] {
+  background-color: var(--border-muted) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Títulos y texto secundario dentro del menú slash (ej. "Headings", "Basic blocks") */
+.bn-menu-dropdown [role="group"] > div,
+.bn-menu-dropdown .text-muted-foreground,
+[data-floating-ui-focusable] .text-muted-foreground {
+  color: var(--text-secondary) !important;
+}
+
