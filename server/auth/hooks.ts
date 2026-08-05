@@ -11,7 +11,19 @@ export async function requireAuth(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
-  const token = request.cookies?.session_token;
+  // Método 1: Header Authorization Bearer <token>
+  const authHeader = request.headers.authorization;
+  let token: string | undefined;
+
+  if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
+    token = authHeader.substring(7).trim();
+  }
+
+  // Método 2 (fallback): Cookie session_token
+  if (!token) {
+    token = request.cookies?.session_token;
+  }
+
   if (!token) {
     reply.status(401).send({ error: 'No autorizado' });
     return;

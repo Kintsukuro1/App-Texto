@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Page } from '@/types/page';
-import { API_BASE_URL } from '@/core/config';
+import { API_BASE_URL, getAuthHeaders } from '@/core/config';
 import { useUiStore } from '@/stores/useUiStore';
 
 interface NotesState {
@@ -42,7 +42,10 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   fetchPages: async () => {
     set({ isLoading: true });
     try {
-      const res = await fetch(API_BASE, { credentials: 'include' });
+      const res = await fetch(API_BASE, {
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
       if (res.ok) {
         const list: Page[] = await res.json();
         const pagesMap: Record<string, Page> = {};
@@ -74,7 +77,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       const res = await fetch(API_BASE, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include',
         body: JSON.stringify({ title, content: '', parentId, isFavorite: false, tags: [] }),
       });
@@ -116,7 +119,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       await fetch(`${API_BASE}/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include',
         body: JSON.stringify({ isFavorite: newFavoriteState }),
       });
@@ -143,7 +146,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       await fetch(`${API_BASE}/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include',
         body: JSON.stringify(changes),
       });
@@ -172,6 +175,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       await fetch(`${API_BASE}/${id}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
         credentials: 'include',
       });
     } catch (err) {
