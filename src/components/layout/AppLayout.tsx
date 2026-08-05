@@ -39,8 +39,15 @@ export const AppLayout = () => {
       }
     };
 
+    const handleOpenShare = () => setIsShareOpen(true);
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('open-share-panel', handleOpenShare);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('open-share-panel', handleOpenShare);
+    };
   }, [setSearchOpen]);
 
 
@@ -79,16 +86,15 @@ export const AppLayout = () => {
                 Ctrl+K
               </kbd>
             </button>
-            {/* Botón compartir — solo en Electron */}
-            {window.electronAPI?.isElectron && (
-              <button
-                onClick={() => setIsShareOpen(true)}
-                title="Compartir en red local"
-                className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium flex items-center gap-1.5"
-              >
-                📡 Compartir
-              </button>
-            )}
+            {/* Botón Compartir / Invitar */}
+            <button
+              onClick={() => setIsShareOpen(true)}
+              title="Compartir en red local e Invitar"
+              className="px-3 py-1.5 rounded-lg text-xs bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 transition-colors cursor-pointer font-medium flex items-center gap-1.5 shadow-sm"
+            >
+              <span>📡</span>
+              <span>Compartir / Invitar</span>
+            </button>
             <button
               onClick={toggleSidebar}
               className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] text-[var(--text-primary)] border border-[var(--border-muted)] transition-colors cursor-pointer font-medium"

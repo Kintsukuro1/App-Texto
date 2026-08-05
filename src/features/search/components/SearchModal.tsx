@@ -69,6 +69,16 @@ export const SearchModal = () => {
           setSearchOpen(false);
         },
       },
+      {
+        id: 'share-lan',
+        icon: '📡',
+        label: 'Invitación & Red LAN (Compartir con Amigos)',
+        action: () => {
+          setSearchOpen(false);
+          // Dispatch custom event to open share panel
+          window.dispatchEvent(new CustomEvent('open-share-panel'));
+        },
+      },
       ...(activePageId
         ? [
             {
