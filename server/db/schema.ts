@@ -34,3 +34,14 @@ export const workspace = sqliteTable('workspace', {
   id: text('id').primaryKey().default('default'),
   name: text('name').notNull().default('Mi Espacio'),
 });
+
+export const pageVersions = sqliteTable('page_versions', {
+  id: text('id').primaryKey(),
+  pageId: text('page_id')
+    .notNull()
+    .references(() => pages.id),
+  userId: text('user_id'),
+  title: text('title').notNull().default('Sin título'),
+  content: text('content').notNull().default(''),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});

@@ -76,7 +76,7 @@
 
 > **Meta**: Hacer que el trabajo en equipo sea seguro, reversible y organizado.
 
-- [ ] **Historial de Versiones (Snapshots)**: Guardar versiones por sesión de edición. Ver diffs, restaurar versiones anteriores
+- [x] **Historial de Versiones (Snapshots)**: Guardar versiones por sesión y manuales. Previsualizar instantáneas, ver autor y restaurar versiones anteriores en 1 clic
 - [ ] **Comentarios por Bloque**: Hilo de comentarios en cualquier bloque. Resolver/archivar. Autoría por usuario
 - [ ] **Múltiples Workspaces**: Separar contextos (Personal / Casa / Trabajo) en el mismo servidor local
 - [ ] **Roles y Permisos**: Dueño / Editor / Solo lectura por workspace o por página

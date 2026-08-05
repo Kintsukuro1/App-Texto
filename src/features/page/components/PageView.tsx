@@ -5,6 +5,7 @@ import { Editor } from '@/features/editor/components/Editor';
 import { usePresence } from '@/features/editor/hooks/usePresence';
 import { BacklinksPanel } from './BacklinksPanel';
 import { PageIcon } from '@/components/common/PageIcon';
+import { VersionHistoryModal } from './VersionHistoryModal';
 import type { HocuspocusProvider } from '@hocuspocus/provider';
 import { API_BASE_URL } from '@/core/config';
 
@@ -22,6 +23,7 @@ export const PageView = ({ page }: PageViewProps) => {
   const [showIconInput, setShowIconInput] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
 
   const [collabProvider, setCollabProvider] = useState<HocuspocusProvider | null>(null);
   const presenceUsers = usePresence(collabProvider);
@@ -219,6 +221,14 @@ export const PageView = ({ page }: PageViewProps) => {
                 </div>
               </div>
             )}
+
+            <button
+              onClick={() => setIsVersionHistoryOpen(true)}
+              className="hover:text-indigo-400 transition-colors cursor-pointer flex items-center gap-1"
+              title="Historial de versiones"
+            >
+              📜 Historial
+            </button>
 
             <button
               onClick={() => deletePage(page.id)}
@@ -419,6 +429,13 @@ export const PageView = ({ page }: PageViewProps) => {
         {/* Backlinks Panel */}
         <BacklinksPanel currentPage={page} />
       </div>
+
+      {/* Modal de Historial de Versiones */}
+      <VersionHistoryModal
+        page={page}
+        isOpen={isVersionHistoryOpen}
+        onClose={() => setIsVersionHistoryOpen(false)}
+      />
     </div>
   );
 };

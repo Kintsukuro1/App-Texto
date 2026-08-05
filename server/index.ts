@@ -6,6 +6,7 @@ import fastifyStatic from '@fastify/static';
 import path from 'path';
 import fs from 'fs';
 import { pagesRoutes } from './routes/pages';
+import { versionsRoutes } from './routes/versions';
 import { authRoutes } from './routes/auth';
 import { workspaceRoutes } from './routes/workspace';
 import { uploadRoutes } from './routes/upload';
@@ -112,6 +113,7 @@ export async function startFastify(port: number = PORT): Promise<void> {
   // Register routes
   await server.register(authRoutes, { prefix: '/api/auth' });
   await server.register(pagesRoutes, { prefix: '/api/pages' });
+  await server.register(versionsRoutes, { prefix: '/api/pages' });
   await server.register(workspaceRoutes, { prefix: '/api/workspace' });
   await server.register(uploadRoutes, { prefix: '/api/upload' });
 
