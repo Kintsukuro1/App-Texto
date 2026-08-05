@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { API_BASE_URL } from '@/core/config';
+import { useNotesStore } from '@/stores/useNotesStore';
 
 export interface User {
   id: string;
@@ -167,6 +168,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       // Ignore network errors on logout
     } finally {
+      useNotesStore.getState().clearPages();
       set({ user: null, sessionToken: null, error: null });
     }
   },

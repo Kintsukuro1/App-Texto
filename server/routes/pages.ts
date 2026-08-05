@@ -12,15 +12,21 @@ export const pagesRoutes: FastifyPluginAsync = async (fastify) => {
   // Protect all page routes with session authentication
   fastify.addHook('onRequest', requireAuth);
 
-  // GET /api/pages - List pages for authenticated user (or legacy unassigned pages)
+  // GET /api/pages - List pages for authenticated user
   fastify.get('/', async (request, reply) => {
     const currentUserId = request.user!.id;
     const allPages = await db.select().from(pages);
 
-    // Filtrar páginas del usuario actual o legacy sin userId
-    const userPages = allPages.filter(
-      (p) => !p.userId || p.userId === currentUserId
-    );
+    // Si existen páginas antiguas sin userId, asignárselas al usuario actual para evitar que queden huérfanas
+    for (const p of allPages) {
+      if (!p.userId) {
+        await db.update(pages).set({ userId: currentUserId }).where(eq(pages.id, p.id));
+        p.userId = currentUserId;
+      }
+    }
+
+    // Filtrar estrictamente las páginas pertenecientes al usuario actual
+    const userPages = allPages.filter((p) => p.userId === currentUserId);
 
     const formatted = userPages.map((p) => ({
       ...p,
@@ -99,23 +105,6 @@ export const pagesRoutes: FastifyPluginAsync = async (fastify) => {
     if (tagsList !== undefined) updatedData.tags = JSON.stringify(tagsList);
 
     await db.update(pages).set(updatedData).where(eq(pages.id, id));
-
-    // Si se actualizó el contenido, limpiar la caché desactualizada en yjs-docs.db
-    if (content !== undefined) {
-      try {
-        const dataDir = process.env.DATA_DIR
-          ? path.resolve(process.env.DATA_DIR)
-          : path.resolve(process.cwd(), 'data');
-        const collabDbPath = path.join(dataDir, 'yjs-docs.db');
-        if (fs.existsSync(collabDbPath)) {
-          const cDb = new Database(collabDbPath);
-          cDb.prepare('DELETE FROM "documents" WHERE name = ?').run(id);
-          cDb.close();
-        }
-      } catch {
-        // Ignorar si no existe
-      }
-    }
 
     const updated = await db.select().from(pages).where(eq(pages.id, id));
     const p = updated[0];

@@ -9,13 +9,15 @@ interface NotesState {
   activePageId: string | null;
   recentPageIds: string[];
   isLoading: boolean;
+  error: string | null;
   fetchPages: () => Promise<void>;
-  createPage: (title?: string, parentId?: string | null) => Promise<Page | null>;
+  createPage: (title?: string, content?: string, parentId?: string | null) => Promise<Page | null>;
   createSubPage: (parentId: string, title?: string) => Promise<Page | null>;
   updatePage: (id: string, changes: Partial<Page>) => Promise<void>;
   deletePage: (id: string) => Promise<void>;
   setActivePageId: (id: string | null) => void;
   toggleFavorite: (id: string) => Promise<void>;
+  clearPages: () => void;
 }
 
 const API_BASE = `${API_BASE_URL}/api/pages`;
@@ -25,6 +27,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   activePageId: null,
   recentPageIds: [],
   isLoading: true,
+  error: null,
 
   setActivePageId: (id) =>
     set((state) => {
@@ -74,13 +77,13 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     }
   },
 
-  createPage: async (title = 'Sin título', parentId: string | null = null) => {
+  createPage: async (title = 'Sin título', content = '', parentId: string | null = null) => {
     try {
       const res = await fetch(API_BASE, {
         method: 'POST',
         headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
-        body: JSON.stringify({ title, content: '', parentId, isFavorite: false, tags: [] }),
+        body: JSON.stringify({ title, content, parentId, isFavorite: false, tags: [] }),
       });
 
       if (res.ok) {
@@ -98,7 +101,7 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   },
 
   createSubPage: async (parentId: string, title = 'Sin título') => {
-    return get().createPage(title, parentId);
+    return get().createPage(title, '', parentId);
   },
 
   toggleFavorite: async (id: string) => {
@@ -186,5 +189,9 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     } catch (err) {
       console.error('Error deleting page:', err);
     }
+  },
+
+  clearPages: () => {
+    set({ pages: {}, activePageId: null, recentPageIds: [] });
   },
 }));
