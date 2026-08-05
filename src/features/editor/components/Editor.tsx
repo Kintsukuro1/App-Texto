@@ -126,6 +126,40 @@ export const Editor = ({
   );
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInitializedRef = useRef(false);
+
+  useEffect(() => {
+    isInitializedRef.current = false;
+  }, [pageId]);
+
+  // Si el documento Yjs colaborativo está recién creado y vacío, sembrar con initialContent de SQLite
+  useEffect(() => {
+    if (!editor || !provider || !ydoc || isInitializedRef.current) return;
+
+    const seedInitialContent = () => {
+      if (isInitializedRef.current) return;
+      const fragment = ydoc.getXmlFragment('blocknote');
+      const parsed = parseInitialContent();
+
+      if (fragment.length === 0 && parsed && parsed.length > 0) {
+        try {
+          editor.replaceBlocks(editor.document, parsed);
+        } catch (err) {
+          console.error('Error al inicializar contenido de la nota:', err);
+        }
+      }
+      isInitializedRef.current = true;
+    };
+
+    provider.on('synced', seedInitialContent);
+    if (provider.isSynced) {
+      seedInitialContent();
+    }
+
+    return () => {
+      provider.off('synced', seedInitialContent);
+    };
+  }, [editor, provider, ydoc, pageId, initialContent]);
 
   useEffect(() => {
     return () => {

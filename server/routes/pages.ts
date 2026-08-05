@@ -9,11 +9,17 @@ export const pagesRoutes: FastifyPluginAsync = async (fastify) => {
   // Protect all page routes with session authentication
   fastify.addHook('onRequest', requireAuth);
 
-  // GET /api/pages - List all pages
-  fastify.get('/', async (_request, reply) => {
+  // GET /api/pages - List pages for authenticated user (or legacy unassigned pages)
+  fastify.get('/', async (request, reply) => {
+    const currentUserId = request.user!.id;
     const allPages = await db.select().from(pages);
-    // Parse tags from JSON string to Array for client
-    const formatted = allPages.map((p) => ({
+
+    // Filtrar páginas del usuario actual o legacy sin userId
+    const userPages = allPages.filter(
+      (p) => !p.userId || p.userId === currentUserId
+    );
+
+    const formatted = userPages.map((p) => ({
       ...p,
       tags: typeof p.tags === 'string' ? (JSON.parse(p.tags || '[]') as string[]) : [],
     }));
@@ -41,8 +47,11 @@ export const pagesRoutes: FastifyPluginAsync = async (fastify) => {
     Body: { title?: string; icon?: string; coverImage?: string; content?: string; isFavorite?: boolean; parentId?: string | null; tags?: string[] };
   }>('/', async (request, reply) => {
     const { title, icon, coverImage, content, isFavorite, parentId, tags: tagsList } = request.body || {};
+    const currentUserId = request.user!.id;
+
     const newPage = {
       id: crypto.randomUUID(),
+      userId: currentUserId,
       title: title ?? 'Sin título',
       icon: icon ?? null,
       coverImage: coverImage ?? null,

@@ -2,6 +2,7 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
 export const pages = sqliteTable('pages', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),
   title: text('title').notNull().default('Sin título'),
   icon: text('icon'),
   coverImage: text('cover_image'),
