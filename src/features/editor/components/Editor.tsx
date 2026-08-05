@@ -12,6 +12,7 @@ import '@blocknote/shadcn/style.css';
 interface EditorProps {
   pageId: string;
   initialContent?: string;
+  readOnly?: boolean;
   onContentChange: (content: string) => void;
   onProviderReady?: (provider: HocuspocusProvider | null) => void;
 }
@@ -19,6 +20,7 @@ interface EditorProps {
 export const Editor = ({
   pageId,
   initialContent,
+  readOnly = false,
   onContentChange,
   onProviderReady,
 }: EditorProps) => {
@@ -183,6 +185,7 @@ export const Editor = ({
     <div className="w-full min-h-[400px] text-[var(--text-primary)]">
       <BlockNoteView
         editor={editor}
+        editable={!readOnly}
         onChange={handleChange}
         theme={theme === 'light' ? 'light' : 'dark'}
       />

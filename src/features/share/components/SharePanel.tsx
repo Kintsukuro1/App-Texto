@@ -235,10 +235,23 @@ export const SharePanel = ({ isOpen, onClose }: SharePanelProps) => {
                   )}
                 </div>
 
-                <div className="p-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-muted)] text-xs text-[var(--text-muted)] space-y-1">
-                  <p className="font-medium text-[var(--text-secondary)]">🤝 Modo de Colaboración LAN</p>
-                  <p className="text-[11px] leading-relaxed">
-                    Cualquier usuario conectado a la red local que entre por la URL o QR aparecerá aquí y podrá ver y editar en tiempo real según los permisos.
+                <div className="p-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-muted)] text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-[var(--text-secondary)]">🤝 Permiso predeterminado para invitados:</p>
+                    <span className="text-[10px] text-indigo-400 font-mono">Modo LAN</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-muted)] flex items-center justify-between">
+                      <span className="text-xs font-medium text-[var(--text-primary)]">✏️ Editor</span>
+                      <span className="text-[10px] text-emerald-400 font-bold">Activo</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-muted)] flex items-center justify-between opacity-70">
+                      <span className="text-xs font-medium text-[var(--text-secondary)]">🔒 Solo Lectura</span>
+                      <span className="text-[10px] text-[var(--text-muted)]">Opcional</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">
+                    Los colaboradores conectados en tu red local tendrán permisos completos de edición en tiempo real.
                   </p>
                 </div>
               </div>

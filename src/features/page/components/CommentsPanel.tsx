@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { API_BASE_URL, getAuthHeaders } from '@/core/config';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { sendSystemNotification } from '@/core/notifications';
 import type { Page } from '@/types/page';
 
 export interface CommentItem {
@@ -78,6 +79,11 @@ export const CommentsPanel = ({
       });
 
       if (res.ok) {
+        sendSystemNotification(
+          'Nuevo Comentario',
+          `${user?.username || 'Un usuario'} comentó en "${page.title || 'Sin título'}": ${newCommentText.substring(0, 40)}...`,
+          '💬'
+        );
         setNewCommentText('');
         await fetchComments();
       }

@@ -9,6 +9,7 @@ import { SearchModal } from '@/features/search/components/SearchModal';
 import { HubView } from '@/features/hub/components/HubView';
 import { ProfileSettings } from '@/features/profile/components/ProfileSettings';
 import { SharePanel } from '@/features/share/components/SharePanel';
+import { requestNotificationPermission } from '@/core/notifications';
 
 export const AppLayout = () => {
   const { isSidebarCollapsed, toggleSidebar, setSearchOpen, isHubActive, theme, fontPreset } = useUiStore();
@@ -19,6 +20,7 @@ export const AppLayout = () => {
   useEffect(() => {
     fetchPages();
     fetchWorkspace();
+    requestNotificationPermission();
   }, [fetchPages, fetchWorkspace]);
 
   useEffect(() => {
