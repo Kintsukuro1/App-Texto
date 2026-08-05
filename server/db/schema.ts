@@ -3,6 +3,7 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 export const pages = sqliteTable('pages', {
   id: text('id').primaryKey(),
   userId: text('user_id'),
+  workspaceId: text('workspace_id').notNull().default('default'),
   title: text('title').notNull().default('Sin título'),
   icon: text('icon'),
   coverImage: text('cover_image'),
@@ -33,6 +34,8 @@ export const sessions = sqliteTable('sessions', {
 export const workspace = sqliteTable('workspace', {
   id: text('id').primaryKey().default('default'),
   name: text('name').notNull().default('Mi Espacio'),
+  ownerId: text('owner_id'),
+  createdAt: integer('created_at', { mode: 'timestamp' }),
 });
 
 export const pageVersions = sqliteTable('page_versions', {

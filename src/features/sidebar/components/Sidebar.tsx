@@ -4,6 +4,7 @@ import { useUiStore } from '@/stores/useUiStore';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { PageTreeNode } from '@/features/sidebar/components/PageTreeNode';
+import { WorkspaceSelector } from '@/features/sidebar/components/WorkspaceSelector';
 import { PageIcon } from '@/components/common/PageIcon';
 import { vocabulary } from '@/core/vocabulary';
 import type { Page } from '@/types/page';
@@ -56,11 +57,13 @@ export const Sidebar = () => {
   const { pages, activePageId, recentPageIds, setActivePageId, createPage } = useNotesStore();
   const { isSidebarCollapsed, toggleSidebar, setSearchOpen, isHubActive, setHubActive, setProfileOpen } = useUiStore();
   const { user, logout } = useAuthStore();
-  const { name: workspaceName } = useWorkspaceStore();
+  const { activeWorkspaceId } = useWorkspaceStore();
 
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  const allPagesList = Object.values(pages);
+  const allPagesList = Object.values(pages).filter(
+    (p) => !p.workspaceId || p.workspaceId === activeWorkspaceId
+  );
 
   // Obtener todas las etiquetas únicas presentes en las páginas
   const allTags = Array.from(
@@ -107,16 +110,9 @@ export const Sidebar = () => {
     >
       {/* Top Header & Navigation Actions */}
       <div className="flex flex-col gap-3 min-h-0 flex-1">
-        {/* Header bar: Workspace Logo & Collapse button */}
+        {/* Header bar: Workspace Selector & Collapse button */}
         <div className="flex items-center justify-between px-1 pt-1">
-          {!isSidebarCollapsed && (
-            <div className="flex items-center gap-2 overflow-hidden">
-              <span className="text-lg shrink-0">✨</span>
-              <span className="font-bold text-xs tracking-wider uppercase bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent truncate">
-                {workspaceName || 'Notion Local'}
-              </span>
-            </div>
-          )}
+          {!isSidebarCollapsed && <WorkspaceSelector />}
           <button
             onClick={toggleSidebar}
             className="p-1.5 rounded-lg bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-muted)] transition-colors cursor-pointer text-xs font-mono ml-auto"

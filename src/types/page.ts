@@ -1,6 +1,7 @@
 export interface Page {
   id: string;
   userId?: string | null;
+  workspaceId?: string | null;
   title: string;
   icon?: string | null;
   coverImage?: string | null;

@@ -78,7 +78,7 @@
 
 - [x] **Historial de Versiones (Snapshots)**: Guardar versiones por sesión y manuales. Previsualizar instantáneas, ver autor y restaurar versiones anteriores en 1 clic
 - [x] **Comentarios por Nota/Bloque**: Panel lateral de comentarios (`💬 Comentarios`), avatares de autoría, hilos activos/resueltos y eliminación
-- [ ] **Múltiples Workspaces**: Separar contextos (Personal / Casa / Trabajo) en el mismo servidor local
+- [x] **Múltiples Workspaces**: Selector desplegable (`WorkspaceSelector.tsx`) para crear y alternar entre contextos (Personal / Trabajo / Universidad) con filtrado de notas por espacio independiente
 - [ ] **Roles y Permisos**: Dueño / Editor / Solo lectura por workspace o por página
 - [ ] **Notificaciones del Sistema**: Alertas nativas de Windows ("Felipe comentó tu nota")
 
