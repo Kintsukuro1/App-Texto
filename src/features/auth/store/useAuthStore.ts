@@ -9,6 +9,7 @@ export interface User {
 
 interface AuthState {
   user: User | null;
+  sessionToken: string | null;
   isLoading: boolean;
   error: string | null;
   checkAuth: () => Promise<void>;
@@ -24,6 +25,7 @@ const AUTH_API = `${API_BASE_URL}/api/auth`;
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
+  sessionToken: null,
   isLoading: true,
   error: null,
 
@@ -38,12 +40,15 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       if (res.ok) {
         const data = await res.json();
-        set({ user: data.user, isLoading: false, error: null });
+        // Fetch the raw session token for WebSocket auth
+        const tokenRes = await fetch(`${AUTH_API}/token`, { credentials: 'include' });
+        const tokenData = tokenRes.ok ? await tokenRes.json() : { token: null };
+        set({ user: data.user, sessionToken: tokenData.token, isLoading: false, error: null });
       } else {
-        set({ user: null, isLoading: false });
+        set({ user: null, sessionToken: null, isLoading: false });
       }
     } catch {
-      set({ user: null, isLoading: false });
+      set({ user: null, sessionToken: null, isLoading: false });
     }
   },
 
@@ -64,7 +69,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         return false;
       }
 
-      set({ user: data.user, error: null });
+      // Fetch the raw session token for WebSocket auth
+      const tokenRes = await fetch(`${AUTH_API}/token`, { credentials: 'include' });
+      const tokenData = tokenRes.ok ? await tokenRes.json() : { token: null };
+      set({ user: data.user, sessionToken: tokenData.token, error: null });
       return true;
     } catch {
       set({ error: 'No se pudo conectar con el servidor' });
@@ -89,7 +97,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         return false;
       }
 
-      set({ user: data.user, error: null });
+      // Fetch the raw session token for WebSocket auth
+      const tokenRes = await fetch(`${AUTH_API}/token`, { credentials: 'include' });
+      const tokenData = tokenRes.ok ? await tokenRes.json() : { token: null };
+      set({ user: data.user, sessionToken: tokenData.token, error: null });
       return true;
     } catch {
       set({ error: 'No se pudo conectar con el servidor' });
@@ -156,7 +167,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       // Ignore network errors on logout
     } finally {
-      set({ user: null, error: null });
+      set({ user: null, sessionToken: null, error: null });
     }
   },
 }));

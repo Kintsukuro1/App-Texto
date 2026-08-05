@@ -38,19 +38,20 @@
 > **Meta**: Convertir la app en un `.exe` instalable, sin terminal, sin configuración manual. El usuario abre la app y todo funciona.
 
 ### 2.1 Migración a Electron
-- [ ] Instalar y configurar `electron` + `electron-builder`
-- [ ] **Main Process**: Levantar Fastify y Hocuspocus dentro del proceso principal de Electron (Node.js embebido)
-- [ ] **Renderer Process**: Cargar la app React (build de Vite) en la ventana de Electron
-- [ ] Mover las bases de datos SQLite a `AppData` del sistema (`app.getPath('userData')`)
-- [ ] Configurar puertos dinámicos para evitar conflictos con otras apps
-- [ ] IPC (Inter-Process Communication) para comunicar Renderer ↔ Main (ej. estado del servidor, IP local)
-- [ ] Build Script: `electron-builder` → genera `.exe` instalable para Windows
+- [x] Instalar y configurar `electron` + `electron-builder`
+- [x] **Main Process**: Levantar Fastify y Hocuspocus dentro del proceso principal de Electron (Node.js embebido)
+- [x] **Renderer Process**: Cargar la app React (build de Vite) en la ventana de Electron
+- [x] Mover las bases de datos SQLite a `AppData` del sistema (`app.getPath('userData')`)
+- [x] IPC (Inter-Process Communication): `get-server-info` expone puerto, puerto collab e IP local
+- [x] **Auth WebSocket mejorada**: Token pasado directamente al provider (sin depender de cookies entre puertos)
+- [ ] Build Script: `electron-builder` → genera `.exe` instalable para Windows *(pendiente validar)*
 
 ### 2.2 Experiencia LAN (Compartir sin Configuración)
-- [ ] **Detección automática de IP local**: La app detecta la IP de la máquina en la red
-- [ ] **Panel "Compartir"**: Muestra `http://[IP]:3000` + código QR para que otros escaneen y entren desde su navegador
+- [x] **Detección automática de IP local**: `getLocalIP()` en el main process
+- [ ] **Panel "Compartir"**: Muestra `http://[IP]:3001` + código QR para que otros escaneen y entren desde su navegador
 - [ ] **System Tray**: La app corre en segundo plano con ícono en la bandeja. Menú: Abrir, Estado del servidor, Salir
 - [ ] **Arranque con Windows** (opcional): Checkbox en Ajustes para iniciar el servidor al encender el PC
+
 
 ---
 

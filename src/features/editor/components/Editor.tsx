@@ -22,24 +22,28 @@ export const Editor = ({
   onProviderReady,
 }: EditorProps) => {
   const { theme } = useUiStore();
-  const { user } = useAuthStore();
+  const { user, sessionToken } = useAuthStore();
 
   const [ydoc, setYdoc] = useState<Y.Doc | null>(null);
   const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
   // Instanciar Y.Doc y HocuspocusProvider por cada página
   useEffect(() => {
-    if (!pageId) return;
+    // No conectar hasta tener usuario y token de sesión
+    if (!pageId || !user || !sessionToken) return;
 
     const doc = new Y.Doc();
     const hocusProvider = new HocuspocusProvider({
       url: 'ws://localhost:1234',
       name: pageId,
       document: doc,
+      // Pasar el token directamente — Hocuspocus lo envía como header Authentication
+      // en el handshake WS, solucionando el problema de cookies entre puertos en Electron
+      token: sessionToken,
     });
 
     // Configurar metadatos del usuario local en awareness para cursores y presencia
-    if (user && hocusProvider.awareness) {
+    if (hocusProvider.awareness) {
       hocusProvider.awareness.setLocalStateField('user', {
         id: user.id,
         name: user.username,
@@ -62,7 +66,8 @@ export const Editor = ({
       hocusProvider.destroy();
       doc.destroy();
     };
-  }, [pageId, user?.id, user?.username, user?.color]);
+  }, [pageId, user?.id, user?.username, user?.color, sessionToken]);
+
 
   const parseInitialContent = (): PartialBlock[] | undefined => {
     if (!initialContent) return undefined;

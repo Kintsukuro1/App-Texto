@@ -8,12 +8,13 @@ import { Sidebar } from '@/features/sidebar/components/Sidebar';
 import { SearchModal } from '@/features/search/components/SearchModal';
 import { HubView } from '@/features/hub/components/HubView';
 import { ProfileSettings } from '@/features/profile/components/ProfileSettings';
+import { SharePanel } from '@/features/share/components/SharePanel';
 
 export const AppLayout = () => {
   const { isSidebarCollapsed, toggleSidebar, setSearchOpen, isHubActive, theme, fontPreset } = useUiStore();
   const { pages, activePageId, fetchPages } = useNotesStore();
   const { name: workspaceName, fetchWorkspace } = useWorkspaceStore();
-  const [shouldSimulateError, setShouldSimulateError] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
     fetchPages();
@@ -42,9 +43,6 @@ export const AppLayout = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setSearchOpen]);
 
-  if (shouldSimulateError) {
-    throw new Error('Error simulado para probar el ErrorBoundary');
-  }
 
   const activePage = activePageId ? pages[activePageId] : null;
 
@@ -71,7 +69,7 @@ export const AppLayout = () => {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setSearchOpen(true)}
               className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium flex items-center gap-2"
@@ -81,17 +79,21 @@ export const AppLayout = () => {
                 Ctrl+K
               </kbd>
             </button>
+            {/* Botón compartir — solo en Electron */}
+            {window.electronAPI?.isElectron && (
+              <button
+                onClick={() => setIsShareOpen(true)}
+                title="Compartir en red local"
+                className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium flex items-center gap-1.5"
+              >
+                📡 Compartir
+              </button>
+            )}
             <button
               onClick={toggleSidebar}
               className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] text-[var(--text-primary)] border border-[var(--border-muted)] transition-colors cursor-pointer font-medium"
             >
               {isSidebarCollapsed ? 'Expandir' : 'Colapsar'}
-            </button>
-            <button
-              onClick={() => setShouldSimulateError(true)}
-              className="px-3 py-1.5 rounded-lg text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 transition-colors cursor-pointer font-medium"
-            >
-              Probar Error Boundary
             </button>
           </div>
         </header>
@@ -110,6 +112,9 @@ export const AppLayout = () => {
 
       {/* Modal de Ajustes de Perfil */}
       <ProfileSettings />
+
+      {/* Panel de Compartir en LAN */}
+      <SharePanel isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />
     </div>
   );
 };

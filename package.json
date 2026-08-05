@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "App de escritorio privada y colaborativa para gestión de conocimiento.",
   "type": "module",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -35,6 +35,7 @@
     "drizzle-orm": "^0.45.2",
     "fastify": "^5.11.2",
     "fuse.js": "^7.5.0",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3",

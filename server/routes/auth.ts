@@ -140,6 +140,16 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 
+  // GET /api/auth/token — devuelve el session token para pasarlo al WebSocket (Hocuspocus)
+  fastify.get(
+    '/token',
+    { onRequest: [requireAuth] },
+    async (request, reply) => {
+      const token = request.cookies?.session_token;
+      return reply.send({ token });
+    }
+  );
+
   // PUT /api/auth/me - Update profile (username, color)
   fastify.put<{
     Body: { username?: string; color?: string };

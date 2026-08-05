@@ -58,9 +58,16 @@ export async function startCollab(
     ],
 
     async onAuthenticate(data) {
-      const cookieHeader = data.requestHeaders.cookie || '';
-      const match = cookieHeader.match(/(?:^|;\s*)session_token=([^;]+)/);
-      const token = match ? decodeURIComponent(match[1]) : null;
+      // Método 1: token enviado directamente por HocuspocusProvider (campo `token`)
+      // Hocuspocus lo transmite como el mensaje de autenticación del protocolo
+      let token = data.token || null;
+
+      // Método 2 (fallback): cookie de sesión en el header HTTP del handshake WS
+      if (!token) {
+        const cookieHeader = data.requestHeaders.cookie || '';
+        const match = cookieHeader.match(/(?:^|;\s*)session_token=([^;]+)/);
+        token = match ? decodeURIComponent(match[1]) : null;
+      }
 
       if (!token) {
         throw new Error('Unauthorized: Session token missing');

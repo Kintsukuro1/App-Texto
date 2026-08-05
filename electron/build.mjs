@@ -13,32 +13,44 @@ const root = path.resolve(__dirname, '..');
 
 const isWatch = process.argv.includes('--watch');
 
-const baseConfig: esbuild.BuildOptions = {
+const baseConfig = {
   bundle: true,
   platform: 'node',
   target: 'node20',
   format: 'cjs',
   external: [
     'electron',
-    // Módulos nativos — no se pueden bundlear, Electron los resuelve desde node_modules
+    // Módulos nativos — no se pueden bundlear
     'better-sqlite3',
     'bcrypt',
   ],
+  // Polyfill para import.meta.url: algunos paquetes ESM (crossws, hocuspocus)
+  // usan createRequire(import.meta.url) que queda undefined en CJS.
+  // Inyectamos un equivalente basado en __filename (disponible en CJS).
+  define: {
+    'import.meta.url': '__esm_import_meta_url__',
+    'import.meta.dirname': '__dirname',
+    'import.meta.filename': '__filename',
+  },
+  banner: {
+    js: "const __esm_import_meta_url__ = require('url').pathToFileURL(__filename).href;",
+  },
   sourcemap: isWatch ? 'inline' : false,
   minify: !isWatch,
 };
+
 
 async function build() {
   const contexts = await Promise.all([
     esbuild.context({
       ...baseConfig,
       entryPoints: [path.join(root, 'electron/main.ts')],
-      outfile: path.join(root, 'dist-electron/main.js'),
+      outfile: path.join(root, 'dist-electron/main.cjs'),
     }),
     esbuild.context({
       ...baseConfig,
       entryPoints: [path.join(root, 'electron/preload.ts')],
-      outfile: path.join(root, 'dist-electron/preload.js'),
+      outfile: path.join(root, 'dist-electron/preload.cjs'),
     }),
   ]);
 

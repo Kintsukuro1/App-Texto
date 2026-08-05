@@ -1,14 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
-/**
- * Expone APIs seguras al proceso renderer (la app React).
- * Únicamente lo que está definido aquí es accesible desde window.electronAPI.
- */
 contextBridge.exposeInMainWorld('electronAPI', {
-  /**
-   * Retorna información del servidor backend que corre en el main process.
-   * Útil para mostrar el URL de LAN en la UI y configurar la URL base de la API.
-   */
+  /** Información del servidor backend (puerto, IP local, URL LAN) */
   getServerInfo: (): Promise<{
     port: number;
     collabPort: number;
@@ -16,6 +9,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     lanURL: string;
   }> => ipcRenderer.invoke('get-server-info'),
 
-  /** Indica si la app está corriendo dentro de Electron */
+  /** Saber si la app arranca con Windows */
+  getAutoLaunch: (): Promise<boolean> => ipcRenderer.invoke('get-auto-launch'),
+
+  /** Activar/desactivar el arranque automático con Windows */
+  setAutoLaunch: (enabled: boolean): Promise<boolean> =>
+    ipcRenderer.invoke('set-auto-launch', enabled),
+
+  /** Mostrar la ventana principal (útil desde ajustes o notificaciones) */
+  showWindow: (): void => ipcRenderer.send('show-window'),
+
+  /** Indica que la app corre dentro de Electron */
   isElectron: true,
 });
