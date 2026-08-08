@@ -11,6 +11,7 @@ import { VersionHistoryModal } from './VersionHistoryModal';
 import { CommentsPanel } from './CommentsPanel';
 import { TableOfContents } from './TableOfContents';
 import { PagePeekPopover } from './PagePeekPopover';
+import { PagePropertiesHeader } from './PagePropertiesHeader';
 import { TemplatePickerModal } from '@/features/templates/components/TemplatePickerModal';
 import type { NoteTemplate } from '@/features/templates/data/templates';
 import { exportPageAsMarkdown, exportPageAsHTML } from '@/core/exporter';
@@ -599,6 +600,9 @@ export const PageView = ({ page }: PageViewProps) => {
             <span>+ Etiqueta</span>
           </button>
         </div>
+
+        {/* Cabecera de Propiedades Estructuradas (Metadata Header) */}
+        <PagePropertiesHeader page={page} />
 
         {/* Rich Text Editor */}
         <div className="pt-4 border-t border-[var(--border-muted)]">

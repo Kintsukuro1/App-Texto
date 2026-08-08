@@ -171,7 +171,7 @@ export const Editor = ({
             name: user?.username || 'Anónimo',
             color: user?.color || '#6366f1',
           },
-          showCursorLabels: 'activity',
+          showCursorLabels: 'always',
         },
         uploadFile: handleUploadFile,
       }
@@ -286,6 +286,47 @@ export const Editor = ({
     }, 150);
   };
 
+  const getMentionMenuItems = (query: string) => {
+    const knownUsers = [
+      { id: user?.id || 'current', name: user?.username || 'Usuario Actual', color: user?.color || '#6366f1' },
+      { id: 'collab-1', name: 'Felipe (Admin)', color: '#3b82f6' },
+      { id: 'collab-2', name: 'Ana (Diseño)', color: '#ec4899' },
+      { id: 'collab-3', name: 'Carlos (Dev)', color: '#10b981' },
+      { id: 'collab-4', name: 'Equipo Notion', color: '#f59e0b' },
+    ];
+
+    const filtered = knownUsers.filter((u) =>
+      u.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+    return filtered.map((u) => ({
+      title: `@${u.name}`,
+      subtext: `Mencionar a ${u.name} en la nota`,
+      onItemClick: () => {
+        editor.insertInlineContent([
+          {
+            type: 'text',
+            text: `@${u.name} `,
+            styles: {
+              bold: true,
+              textColor: 'blue',
+            },
+          },
+        ]);
+
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+          if (Notification.permission === 'granted') {
+            new Notification('Mención enviada 💬', {
+              body: `Has mencionado a @${u.name} en esta página.`,
+            });
+          } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission();
+          }
+        }
+      },
+    }));
+  };
+
   return (
     <div className="w-full min-h-[400px] text-[var(--text-primary)]">
       <BlockNoteView
@@ -298,6 +339,12 @@ export const Editor = ({
           triggerCharacter="/"
           getItems={async (query) =>
             filterSuggestionItems(getNotionSlashMenuItems(editor), query)
+          }
+        />
+        <SuggestionMenuController
+          triggerCharacter="@"
+          getItems={async (query) =>
+            filterSuggestionItems(getMentionMenuItems(query), query)
           }
         />
       </BlockNoteView>

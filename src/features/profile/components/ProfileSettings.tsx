@@ -37,6 +37,9 @@ export const ProfileSettings = () => {
     setTrashRetentionDays,
     autoStartWindows,
     setAutoStartWindows,
+    customShortcuts,
+    setCustomShortcut,
+    resetCustomShortcuts,
   } = useUiStore();
 
   const { user, updateProfile, changePassword, error: authError, clearError } = useAuthStore();
@@ -44,6 +47,33 @@ export const ProfileSettings = () => {
   const { pages } = useNotesStore();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
+  const [editingShortcutKey, setEditingShortcutKey] = useState<string | null>(null);
+
+  // Listener para capturar combinaciones de teclas al editar un atajo
+  useEffect(() => {
+    if (!editingShortcutKey) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const parts: string[] = [];
+      if (e.ctrlKey || e.metaKey) parts.push('Ctrl');
+      if (e.altKey) parts.push('Alt');
+      if (e.shiftKey) parts.push('Shift');
+
+      const keyName = e.key.toUpperCase();
+      if (!['CONTROL', 'ALT', 'SHIFT', 'META'].includes(keyName)) {
+        parts.push(keyName);
+        const combo = parts.join('+');
+        setCustomShortcut(editingShortcutKey as any, combo);
+        setEditingShortcutKey(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [editingShortcutKey, setCustomShortcut]);
 
   // Profile Form State
   const [username, setUsername] = useState(user?.username || '');
@@ -838,28 +868,51 @@ export const ProfileSettings = () => {
                 </div>
               </div>
 
-              {/* Tabla de Atajos Teclado */}
-              <div className="pt-3 border-t border-[var(--border-muted)]">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">
-                  Atajos Rápidos de Teclado
-                </h3>
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="p-2 bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-xl flex items-center justify-between">
-                    <span>Buscar notas</span>
-                    <kbd className="px-1.5 py-0.5 bg-[var(--bg-surface)] rounded border border-[var(--border-muted)] font-mono text-[10px]">Ctrl+K</kbd>
-                  </div>
-                  <div className="p-2 bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-xl flex items-center justify-between">
-                    <span>Nota Diaria</span>
-                    <kbd className="px-1.5 py-0.5 bg-[var(--bg-surface)] rounded border border-[var(--border-muted)] font-mono text-[10px]">Ctrl+D</kbd>
-                  </div>
-                  <div className="p-2 bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-xl flex items-center justify-between">
-                    <span>Modo Zen / Focus</span>
-                    <kbd className="px-1.5 py-0.5 bg-[var(--bg-surface)] rounded border border-[var(--border-muted)] font-mono text-[10px]">Ctrl+Shift+F</kbd>
-                  </div>
-                  <div className="p-2 bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-xl flex items-center justify-between">
-                    <span>Salir de Zen</span>
-                    <kbd className="px-1.5 py-0.5 bg-[var(--bg-surface)] rounded border border-[var(--border-muted)] font-mono text-[10px]">Esc</kbd>
-                  </div>
+              {/* Tabla de Atajos Teclado Personalizables */}
+              <div className="pt-3 border-t border-[var(--border-muted)] space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                    Atajos Rápidos de Teclado
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => resetCustomShortcuts()}
+                    className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer transition-colors"
+                  >
+                    Restablecer valores por defecto
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                  {[
+                    { key: 'search', label: 'Buscar notas' },
+                    { key: 'dailyNote', label: 'Nota Diaria' },
+                    { key: 'zenMode', label: 'Modo Zen / Focus' },
+                    { key: 'newNote', label: 'Nueva Nota' },
+                    { key: 'toggleSidebar', label: 'Alternar Sidebar' },
+                  ].map((item) => {
+                    const k = item.key as keyof typeof customShortcuts;
+                    const isEditing = editingShortcutKey === k;
+                    return (
+                      <div
+                        key={k}
+                        className="p-2.5 bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-xl flex items-center justify-between"
+                      >
+                        <span className="text-[var(--text-primary)] font-medium">{item.label}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingShortcutKey(isEditing ? null : k)}
+                          className={`px-2 py-1 rounded-lg border font-mono text-[10px] transition-all cursor-pointer ${
+                            isEditing
+                              ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 animate-pulse'
+                              : 'bg-[var(--bg-surface)] border-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                          }`}
+                        >
+                          {isEditing ? 'Presiona teclas...' : customShortcuts[k] || 'Ctrl+K'}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

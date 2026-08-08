@@ -280,6 +280,74 @@ h6 {
 }
 
 /* ==========================================================================
+   Estilos de Selección y Cursor Colaborativo Multiusuario (Estilo Google Docs)
+   ========================================================================== */
+
+/* Cursor de otros usuarios en el editor */
+.collaboration-cursor__caret {
+  position: relative !important;
+  border-left: 2.5px solid var(--user-color, #6366f1) !important;
+  border-right: 0 !important;
+  margin-left: -1px !important;
+  margin-right: -1px !important;
+  word-break: normal !important;
+  pointer-events: none !important;
+  transition: all 0.1s ease !important;
+}
+
+/* Badge flotante con nombre sobre el cursor del colaborador */
+.collaboration-cursor__label {
+  position: absolute !important;
+  top: -1.75em !important;
+  left: -2px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  line-height: 1.2 !important;
+  user-select: none !important;
+  color: #ffffff !important;
+  background-color: var(--user-color, #6366f1) !important;
+  padding: 2px 7px !important;
+  border-radius: 4px 4px 4px 0 !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  z-index: 20 !important;
+  opacity: 0.95 !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Resaltado vibrante de texto seleccionado por otro usuario en tiempo real */
+.collaboration-cursor__selection {
+  background-color: var(--user-color, #6366f1) !important;
+  opacity: 0.35 !important;
+  border-radius: 2px !important;
+  pointer-events: none !important;
+}
+
+/* Etiqueta Inline de Mención (@Usuario) */
+.user-mention-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 1px 6px !important;
+  border-radius: 6px !important;
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+  color: #818cf8 !important;
+  font-weight: 600 !important;
+  font-size: 0.9em !important;
+  user-select: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.user-mention-tag:hover {
+  background-color: rgba(99, 102, 241, 0.25) !important;
+  color: #a5b4fc !important;
+}
+
+
+/* ==========================================================================
    Estilos de Impresión / Exportación PDF (@media print)
    ========================================================================== */
 @media print {

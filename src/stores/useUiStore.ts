@@ -34,6 +34,15 @@ interface UiState {
   trashRetentionDays: TrashRetentionDays;
   autoStartWindows: boolean;
 
+  // Atajos de Teclado Personalizables
+  customShortcuts: {
+    search: string;
+    dailyNote: string;
+    zenMode: string;
+    newNote: string;
+    toggleSidebar: string;
+  };
+
   // Actions
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
@@ -55,7 +64,17 @@ interface UiState {
   setNotificationSound: (sound: boolean) => void;
   setTrashRetentionDays: (days: TrashRetentionDays) => void;
   setAutoStartWindows: (autoStart: boolean) => void;
+  setCustomShortcut: (actionKey: 'search' | 'dailyNote' | 'zenMode' | 'newNote' | 'toggleSidebar', combo: string) => void;
+  resetCustomShortcuts: () => void;
 }
+
+const DEFAULT_SHORTCUTS = {
+  search: 'Ctrl+K',
+  dailyNote: 'Ctrl+D',
+  zenMode: 'Ctrl+Shift+F',
+  newNote: 'Ctrl+N',
+  toggleSidebar: 'Ctrl+\\',
+};
 
 export const useUiStore = create<UiState>()(
   persist(
@@ -79,6 +98,8 @@ export const useUiStore = create<UiState>()(
       notificationSound: true,
       trashRetentionDays: 30,
       autoStartWindows: false,
+
+      customShortcuts: DEFAULT_SHORTCUTS,
 
       setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
       toggleSidebar: () =>
@@ -106,6 +127,11 @@ export const useUiStore = create<UiState>()(
           window.electronAPI.setAutoLaunch(autoStartWindows).catch(console.error);
         }
       },
+      setCustomShortcut: (actionKey, combo) =>
+        set((state) => ({
+          customShortcuts: { ...state.customShortcuts, [actionKey]: combo },
+        })),
+      resetCustomShortcuts: () => set({ customShortcuts: DEFAULT_SHORTCUTS }),
     }),
     {
       name: 'notion-local-ui',
@@ -124,6 +150,7 @@ export const useUiStore = create<UiState>()(
         notificationSound: state.notificationSound,
         trashRetentionDays: state.trashRetentionDays,
         autoStartWindows: state.autoStartWindows,
+        customShortcuts: state.customShortcuts,
       }),
     }
   )
