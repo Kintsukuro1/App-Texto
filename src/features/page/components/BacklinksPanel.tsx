@@ -4,9 +4,11 @@ import type { Page } from '@/types/page';
 
 interface BacklinksPanelProps {
   currentPage: Page;
+  onHoverPage?: (page: Page, e: React.MouseEvent) => void;
+  onLeavePage?: () => void;
 }
 
-export const BacklinksPanel = ({ currentPage }: BacklinksPanelProps) => {
+export const BacklinksPanel = ({ currentPage, onHoverPage, onLeavePage }: BacklinksPanelProps) => {
   const { pages, setActivePageId } = useNotesStore();
 
   const allPages = Object.values(pages);
@@ -41,6 +43,8 @@ export const BacklinksPanel = ({ currentPage }: BacklinksPanelProps) => {
           <button
             key={page.id}
             onClick={() => setActivePageId(page.id)}
+            onMouseEnter={(e) => onHoverPage?.(page, e)}
+            onMouseLeave={() => onLeavePage?.()}
             className="text-left p-3 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-hover)] border border-[var(--border-muted)] hover:border-indigo-500/40 transition-all cursor-pointer space-y-1 group"
           >
             <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-primary)] group-hover:text-indigo-400 transition-colors">

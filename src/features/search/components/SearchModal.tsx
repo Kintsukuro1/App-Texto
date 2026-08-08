@@ -21,8 +21,10 @@ export const SearchModal = () => {
     setTheme,
     setHubActive,
     setProfileOpen,
+    isZenMode,
+    toggleZenMode,
   } = useUiStore();
-  const { pages, activePageId, setActivePageId, createPage, deletePage } = useNotesStore();
+  const { pages, activePageId, setActivePageId, createPage, deletePage, getOrCreateDailyNote } = useNotesStore();
 
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -32,6 +34,26 @@ export const SearchModal = () => {
   // Lista de acciones del sistema disponibles en la Paleta de Comandos
   const actions: CommandAction[] = useMemo(
     () => [
+      {
+        id: 'daily-note',
+        icon: '📅',
+        label: 'Abrir / Crear Nota Diaria',
+        shortcut: 'Ctrl+D',
+        action: () => {
+          getOrCreateDailyNote();
+          setSearchOpen(false);
+        },
+      },
+      {
+        id: 'toggle-zen',
+        icon: '🧘',
+        label: isZenMode ? 'Salir del Modo Focus / Zen' : 'Entrar al Modo Focus / Zen',
+        shortcut: 'Ctrl+Shift+F',
+        action: () => {
+          toggleZenMode();
+          setSearchOpen(false);
+        },
+      },
       {
         id: 'new-page',
         icon: '➕',

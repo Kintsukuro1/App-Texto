@@ -15,13 +15,23 @@
 }
 
 :root {
-  --bg-primary: #020617;      /* slate-950 */
-  --bg-surface: #0f172a;      /* slate-900 */
-  --border-muted: #1e293b;    /* slate-800 */
-  --text-primary: #f1f5f9;    /* slate-100 */
-  --text-secondary: #94a3b8;  /* slate-400 */
+  --bg-primary: #020617;
+  /* slate-950 */
+  --bg-surface: #0f172a;
+  /* slate-900 */
+  --border-muted: #1e293b;
+  /* slate-800 */
+  --text-primary: #f1f5f9;
+  /* slate-100 */
+  --text-secondary: #94a3b8;
+  /* slate-400 */
   --font-heading: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Accent Color Default (Indigo) */
+  --accent-primary: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-bg: rgba(99, 102, 241, 0.15);
 
   /* Variables CSS para BlockNote */
   --bn-colors-editor-background: transparent;
@@ -36,12 +46,80 @@
   --bn-colors-tooltip-text: var(--text-primary);
 }
 
+/* Color Presets de Acento */
+[data-accent="violet"] {
+  --accent-primary: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-bg: rgba(139, 92, 246, 0.15);
+}
+
+[data-accent="cyan"] {
+  --accent-primary: #06b6d4;
+  --accent-hover: #0891b2;
+  --accent-bg: rgba(6, 182, 212, 0.15);
+}
+
+[data-accent="emerald"] {
+  --accent-primary: #10b981;
+  --accent-hover: #059669;
+  --accent-bg: rgba(16, 185, 129, 0.15);
+}
+
+[data-accent="rose"] {
+  --accent-primary: #f43f5e;
+  --accent-hover: #e11d48;
+  --accent-bg: rgba(244, 63, 94, 0.15);
+}
+
+[data-accent="amber"] {
+  --accent-primary: #f59e0b;
+  --accent-hover: #d97706;
+  --accent-bg: rgba(245, 158, 11, 0.15);
+}
+
+/* Animaciones reducidas */
+[data-animations="false"] *,
+[data-animations="false"] *::before,
+[data-animations="false"] *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Tamaño de Fuente e Interlineado del Editor */
+[data-font-size="sm"] .bn-editor {
+  font-size: 0.875rem !important;
+}
+
+[data-font-size="md"] .bn-editor {
+  font-size: 1rem !important;
+}
+
+[data-font-size="lg"] .bn-editor {
+  font-size: 1.125rem !important;
+}
+
+[data-line-height="compact"] .bn-editor {
+  line-height: 1.4 !important;
+}
+
+[data-line-height="normal"] .bn-editor {
+  line-height: 1.6 !important;
+}
+
+[data-line-height="spacious"] .bn-editor {
+  line-height: 1.9 !important;
+}
+
 .light {
   --bg-primary: #ffffff;
-  --bg-surface: #f8fafc;      /* slate-50 */
-  --border-muted: #e2e8f0;    /* slate-200 */
-  --text-primary: #0f172a;    /* slate-900 */
-  --text-secondary: #475569;  /* slate-600 */
+  --bg-surface: #f8fafc;
+  /* slate-50 */
+  --border-muted: #e2e8f0;
+  /* slate-200 */
+  --text-primary: #0f172a;
+  /* slate-900 */
+  --text-secondary: #475569;
+  /* slate-600 */
 
   /* Variables CSS para BlockNote en modo claro */
   --bn-colors-editor-background: transparent;
@@ -67,7 +145,12 @@ body {
   font-family: var(--font-body);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
 }
 
@@ -90,7 +173,7 @@ h1, h2, h3, h4, h5, h6 {
 /* 2. Menú desplegable Slash "/" y Popovers flotantes de BlockNote */
 .bn-menu-dropdown,
 [data-floating-ui-focusable],
-[data-radix-popper-content-wrapper] > div,
+[data-radix-popper-content-wrapper]>div,
 .bn-popover,
 .bn-shadcn [role="menu"],
 .bn-shadcn [role="listbox"] {
@@ -101,21 +184,61 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Hover y foco en items del menú slash */
-.bn-menu-dropdown [role="menuitem"]:hover,
-.bn-menu-dropdown [role="option"]:hover,
-[data-floating-ui-focusable] [role="menuitem"]:hover,
-[data-floating-ui-focusable] [role="option"]:hover,
-.bn-shadcn [role="menuitem"][data-highlighted],
-.bn-shadcn [role="option"][data-highlighted] {
-  background-color: var(--border-muted) !important;
-  color: var(--text-primary) !important;
+/* Resaltar la burbuja completa de la opción ÚNICAMENTE al pasar el mouse (:hover) */
+[role="option"] div,
+[role="menuitem"] div {
+  background-color: transparent !important;
+  background: none !important;
 }
 
-/* Títulos y texto secundario dentro del menú slash (ej. "Headings", "Basic blocks") */
-.bn-menu-dropdown [role="group"] > div,
-.bn-menu-dropdown .text-muted-foreground,
-[data-floating-ui-focusable] .text-muted-foreground {
-  color: var(--text-secondary) !important;
+[role="option"],
+[role="menuitem"] {
+  background-color: transparent !important;
+  transition: background-color 0.12s ease-in-out, color 0.12s ease-in-out !important;
+  border-radius: 0.5rem !important;
 }
 
+[role="option"]:hover,
+[role="menuitem"]:hover {
+  background-color: rgba(99, 102, 241, 0.25) !important;
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   Estilos de Impresión / Exportación PDF (@media print)
+   ========================================================================== */
+@media print {
+
+  aside,
+  header,
+  button,
+  .no-print,
+  [role="dialog"],
+  .fixed,
+  .absolute {
+    display: none !important;
+  }
+
+  body,
+  html,
+  main {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .bn-container,
+  .bn-editor,
+  .bn-root {
+    color: #0f172a !important;
+  }
+
+  .max-w-4xl {
+    max-width: 100% !important;
+    padding: 2rem !important;
+  }
+}

@@ -6,6 +6,8 @@ import { useNotesStore } from '@/stores/useNotesStore';
 import { vocabulary } from '@/core/vocabulary';
 import type { Page } from '@/types/page';
 
+import { PageIcon } from '@/components/common/PageIcon';
+
 export const HubView = () => {
   const { message, gradient, subtitle, icon } = useTimeOfDay();
   const { mood, triggerHappyReaction } = useMascotState();
@@ -33,9 +35,9 @@ export const HubView = () => {
         className="group relative p-4 rounded-2xl bg-[var(--bg-surface)] hover:bg-[var(--bg-primary)] border border-[var(--border-muted)] hover:border-indigo-500/40 transition-all duration-200 cursor-pointer flex flex-col justify-between text-left space-y-3 shadow-md hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-0.5"
       >
         <div className="flex items-center justify-between">
-          <span className="text-2xl group-hover:scale-110 transition-transform duration-200">
-            {page.icon ? page.icon : '📄'}
-          </span>
+          <div className="w-9 h-9 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-muted)] flex items-center justify-center text-xl overflow-hidden shrink-0 group-hover:scale-110 transition-transform duration-200">
+            <PageIcon icon={page.icon} className="w-full h-full object-cover" fallback="📄" />
+          </div>
           {page.isFavorite && (
             <span className="text-xs text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
               ★ Favorita

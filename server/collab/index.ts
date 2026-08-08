@@ -1,32 +1,28 @@
-import { Server } from '@hocuspocus/server';
+import { Server as HocuspocusServer } from '@hocuspocus/server';
 import { Database as HocuspocusDatabase } from '@hocuspocus/extension-database';
 import Database from 'better-sqlite3';
 import { validateSession } from '../auth/session';
 import path from 'path';
 import fs from 'fs';
+import type { Server as HttpServer } from 'http';
+import { WebSocketServer } from 'ws';
 
 const COLLAB_PORT = Number(process.env.COLLAB_PORT) || 1234;
 
-/**
- * Arranca el servidor de colaboración Hocuspocus.
- * Puede ser invocado desde Electron main process o desde CLI con `tsx watch`.
- */
-export async function startCollab(
-  port: number = COLLAB_PORT,
-  dataDir?: string
-): Promise<void> {
-  // Directorio de datos: parámetro > env var > cwd/data
-  const resolvedDataDir =
-    dataDir ??
-    (process.env.DATA_DIR
-      ? path.resolve(process.env.DATA_DIR)
-      : path.join(process.cwd(), 'data'));
+let hocuspocusInstance: HocuspocusServer | null = null;
 
-  if (!fs.existsSync(resolvedDataDir)) {
-    fs.mkdirSync(resolvedDataDir, { recursive: true });
+/**
+ * Crea la instancia de Hocuspocus (sin ponerla a escuchar en ningún puerto).
+ * Reutilizable tanto para modo standalone como para modo compartido.
+ */
+function getOrCreateHocuspocus(dataDir: string): HocuspocusServer {
+  if (hocuspocusInstance) return hocuspocusInstance;
+
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
   }
 
-  const dbPath = path.join(resolvedDataDir, 'yjs-docs.db');
+  const dbPath = path.join(dataDir, 'yjs-docs.db');
   const db = new Database(dbPath);
 
   db.exec(`
@@ -43,8 +39,7 @@ export async function startCollab(
     ON CONFLICT(name) DO UPDATE SET data = excluded.data
   `);
 
-  const server = new Server({
-    port,
+  const server = new HocuspocusServer({
     extensions: [
       new HocuspocusDatabase({
         async fetch(data) {
@@ -58,11 +53,8 @@ export async function startCollab(
     ],
 
     async onAuthenticate(data) {
-      // Método 1: token enviado directamente por HocuspocusProvider (campo `token`)
-      // Hocuspocus lo transmite como el mensaje de autenticación del protocolo
       let token = data.token || null;
 
-      // Método 2 (fallback): cookie de sesión en el header HTTP del handshake WS
       if (!token) {
         const cookieHeader = data.requestHeaders.cookie || '';
         const match = cookieHeader.match(/(?:^|;\s*)session_token=([^;]+)/);
@@ -89,8 +81,57 @@ export async function startCollab(
     },
   });
 
+  hocuspocusInstance = server;
+  return server;
+}
+
+/**
+ * Arranca el servidor de colaboración Hocuspocus en su propio puerto (modo standalone).
+ * Se usa para conexiones directas por LAN (ws://IP:1234).
+ */
+export async function startCollab(
+  port: number = COLLAB_PORT,
+  dataDir?: string
+): Promise<void> {
+  const resolvedDataDir =
+    dataDir ??
+    (process.env.DATA_DIR
+      ? path.resolve(process.env.DATA_DIR)
+      : path.join(process.cwd(), 'data'));
+
+  const server = getOrCreateHocuspocus(resolvedDataDir);
   await server.listen(port);
   console.log(`🚀 Servidor de colaboración Hocuspocus corriendo en ws://localhost:${port}`);
+}
+
+/**
+ * Conecta Hocuspocus al servidor HTTP de Fastify para que los WebSockets
+ * de colaboración funcionen a través del mismo puerto (3001) y del túnel Cloudflare.
+ *
+ * Debe llamarse DESPUÉS de startCollab (para que la instancia exista)
+ * y DESPUÉS de server.ready() (para que server.server exista).
+ */
+export function attachCollabToHttpServer(httpServer: HttpServer): void {
+  if (!hocuspocusInstance) {
+    console.error('[collab] No hay instancia de Hocuspocus. ¿Se llamó startCollab primero?');
+    return;
+  }
+
+  const wss = new WebSocketServer({ noServer: true });
+
+  httpServer.on('upgrade', (request, socket, head) => {
+    // Solo manejar rutas de colaboración
+    if (!request.url || (!request.url.startsWith('/collab') && !request.url.startsWith('/ws'))) {
+      return;
+    }
+
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      hocuspocusInstance?.handleConnection(ws, request);
+      console.log('[collab] WebSocket upgrade exitoso para:', request.url);
+    });
+  });
+
+  console.log('🔗 Hocuspocus conectado al servidor HTTP de Fastify (puerto compartido)');
 }
 
 // Punto de entrada directo (para `tsx watch server/collab/index.ts`)

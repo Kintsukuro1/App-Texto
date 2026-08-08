@@ -1,4 +1,5 @@
 import React from 'react';
+import { resolveImageUrl } from '@/core/config';
 
 interface PageIconProps {
   icon?: string | null;
@@ -13,6 +14,7 @@ export const isImageIcon = (icon?: string | null): boolean => {
     lower.startsWith('http://') ||
     lower.startsWith('https://') ||
     lower.startsWith('/uploads/') ||
+    lower.includes('/uploads/') ||
     lower.startsWith('data:image/') ||
     lower.endsWith('.png') ||
     lower.endsWith('.jpg') ||
@@ -35,7 +37,7 @@ export const PageIcon: React.FC<PageIconProps> = ({
   if (isImageIcon(icon)) {
     return (
       <img
-        src={icon}
+        src={resolveImageUrl(icon)}
         alt="Page Icon"
         className={className}
         onError={(e) => {

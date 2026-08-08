@@ -113,7 +113,7 @@ export const CommentsPanel = ({
     try {
       const res = await fetch(`${API_BASE_URL}/api/pages/comments/${commentId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(sessionToken),
+        headers: getAuthHeaders(sessionToken, false),
         credentials: 'include',
       });
 

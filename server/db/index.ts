@@ -17,8 +17,21 @@ const sqlite = new Database(dbPath);
 
 export const db = drizzle(sqlite, { schema });
 
-// Seed default workspace row if not exists
+// Seed default workspace row if not exists and ensure columns exist
 try {
+  const pageCols = (sqlite.prepare('PRAGMA table_info(pages)').all() as { name: string }[]).map((c) => c.name);
+  if (pageCols.length > 0) {
+    if (!pageCols.includes('is_private')) {
+      sqlite.prepare('ALTER TABLE pages ADD COLUMN is_private INTEGER NOT NULL DEFAULT 0').run();
+    }
+    if (!pageCols.includes('workspace_id')) {
+      sqlite.prepare("ALTER TABLE pages ADD COLUMN workspace_id TEXT NOT NULL DEFAULT 'default'").run();
+    }
+    if (!pageCols.includes('user_id')) {
+      sqlite.prepare('ALTER TABLE pages ADD COLUMN user_id TEXT').run();
+    }
+  }
+
   const existing = sqlite.prepare('SELECT id FROM workspace WHERE id = ?').get('default');
   if (!existing) {
     sqlite.prepare('INSERT INTO workspace (id, name) VALUES (?, ?)').run('default', 'Mi Espacio');

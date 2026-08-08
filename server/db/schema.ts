@@ -11,6 +11,7 @@ export const pages = sqliteTable('pages', {
   parentId: text('parent_id'),
   tags: text('tags').notNull().default('[]'),
   isFavorite: integer('is_favorite', { mode: 'boolean' }).notNull().default(false),
+  isPrivate: integer('is_private', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });

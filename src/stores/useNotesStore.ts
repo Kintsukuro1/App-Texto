@@ -3,6 +3,7 @@ import type { Page } from '@/types/page';
 import { API_BASE_URL, getAuthHeaders } from '@/core/config';
 import { useUiStore } from '@/stores/useUiStore';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 
 interface NotesState {
   pages: Record<string, Page>;
@@ -12,13 +13,16 @@ interface NotesState {
   error: string | null;
   fetchPages: () => Promise<void>;
   fetchPageById: (id: string) => Promise<Page | null>;
-  createPage: (title?: string, content?: string, parentId?: string | null) => Promise<Page | null>;
+  createPage: (title?: string, content?: string, parentId?: string | null, workspaceId?: string) => Promise<Page | null>;
   createSubPage: (parentId: string, title?: string) => Promise<Page | null>;
+  getOrCreateDailyNote: () => Promise<Page | null>;
   updatePage: (id: string, changes: Partial<Page>) => Promise<void>;
   deletePage: (id: string) => Promise<void>;
   setActivePageId: (id: string | null) => void;
   toggleFavorite: (id: string) => Promise<void>;
   clearPages: () => void;
+  /** Re-fetch silencioso de una página del servidor para sincronizar metadatos */
+  refreshPageMetadata: (id: string) => Promise<void>;
 }
 
 const API_BASE = `${API_BASE_URL}/api/pages`;
@@ -71,9 +75,11 @@ export const useNotesStore = create<NotesState>((set, get) => ({
           get().setActivePageId(newActive);
         }
       } else {
+        console.error('Error HTTP al obtener páginas:', res.status, await res.text());
         set({ isLoading: false });
       }
-    } catch {
+    } catch (err) {
+      console.error('Error al obtener páginas:', err);
       set({ isLoading: false });
     }
   },
@@ -100,13 +106,17 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     return null;
   },
 
-  createPage: async (title = 'Sin título', content = '', parentId: string | null = null) => {
+  createPage: async (title = 'Sin título', content = '', parentId: string | null = null, workspaceId?: string) => {
     try {
+      const activeWs = useWorkspaceStore.getState().activeWorkspaceId;
+      const parentPage = parentId ? get().pages[parentId] : null;
+      const targetWorkspaceId = workspaceId || parentPage?.workspaceId || activeWs || 'default';
+
       const res = await fetch(API_BASE, {
         method: 'POST',
         headers: getAuthHeaders(useAuthStore.getState().sessionToken),
         credentials: 'include',
-        body: JSON.stringify({ title, content, parentId, isFavorite: false, tags: [] }),
+        body: JSON.stringify({ title, content, parentId, workspaceId: targetWorkspaceId, isFavorite: false, isPrivate: true, tags: [] }),
       });
 
       if (res.ok) {
@@ -116,15 +126,64 @@ export const useNotesStore = create<NotesState>((set, get) => ({
         }));
         get().setActivePageId(newPage.id);
         return newPage;
+      } else {
+        console.error('Error HTTP al crear nota:', res.status, await res.text());
       }
       return null;
-    } catch {
+    } catch (err) {
+      console.error('Error al crear nota:', err);
       return null;
     }
   },
 
   createSubPage: async (parentId: string, title = 'Sin título') => {
-    return get().createPage(title, '', parentId);
+    const parentPage = get().pages[parentId];
+    const wsId = parentPage?.workspaceId || useWorkspaceStore.getState().activeWorkspaceId;
+    return get().createPage(title, '', parentId, wsId);
+  },
+
+  getOrCreateDailyNote: async () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const dailyTitle = `📅 ${todayStr}`;
+    const activeWs = useWorkspaceStore.getState().activeWorkspaceId;
+    const allPages = Object.values(get().pages);
+
+    // Buscar si ya existe una nota para la fecha de hoy
+    const existing = allPages.find(
+      (p) => p.title && p.title.trim() === dailyTitle && (!p.workspaceId || p.workspaceId === activeWs)
+    );
+    if (existing) {
+      get().setActivePageId(existing.id);
+      return existing;
+    }
+
+    // Plantilla inicial para nota diaria
+    const initialContent = JSON.stringify([
+      {
+        type: 'heading',
+        props: { level: 2 },
+        content: [{ type: 'text', text: '🎯 Objetivos del día' }],
+      },
+      {
+        type: 'checkListItem',
+        content: [{ type: 'text', text: 'Planificar prioridades del día' }],
+      },
+      {
+        type: 'checkListItem',
+        content: [{ type: 'text', text: 'Revisar notas pendientes' }],
+      },
+      {
+        type: 'heading',
+        props: { level: 2 },
+        content: [{ type: 'text', text: '📝 Diario & Reflexiones' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: '' }],
+      },
+    ]);
+
+    return get().createPage(dailyTitle, initialContent, null, activeWs);
   },
 
   toggleFavorite: async (id: string) => {
@@ -204,17 +263,56 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     });
 
     try {
-      await fetch(`${API_BASE}/${id}`, {
+      const res = await fetch(`${API_BASE}/${id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken, false),
         credentials: 'include',
       });
+      if (!res.ok) {
+        console.error('Error HTTP al eliminar página:', res.status, await res.text());
+        await get().fetchPages();
+      }
     } catch (err) {
       console.error('Error deleting page:', err);
+      await get().fetchPages();
     }
   },
 
   clearPages: () => {
     set({ pages: {}, activePageId: null, recentPageIds: [] });
+  },
+
+  refreshPageMetadata: async (id: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/${id}`, {
+        method: 'GET',
+        headers: getAuthHeaders(useAuthStore.getState().sessionToken),
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const page: Page = await res.json();
+        const existing = get().pages[id];
+        if (existing) {
+          // Solo actualizar metadatos, no el contenido (el contenido se sincroniza vía Yjs)
+          set((state) => ({
+            pages: {
+              ...state.pages,
+              [id]: {
+                ...state.pages[id],
+                title: page.title,
+                icon: page.icon,
+                coverImage: page.coverImage,
+                tags: page.tags,
+                isFavorite: page.isFavorite,
+                isPrivate: page.isPrivate,
+                updatedAt: page.updatedAt,
+              },
+            },
+          }));
+        }
+      }
+    } catch {
+      // Silencioso: es solo un refresh de fondo
+    }
   },
 }));

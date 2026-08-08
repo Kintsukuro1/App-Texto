@@ -19,6 +19,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /** Mostrar la ventana principal (útil desde ajustes o notificaciones) */
   showWindow: (): void => ipcRenderer.send('show-window'),
 
+  /** Iniciar túnel de Cloudflare */
+  startTunnel: (): Promise<{ success: boolean; url: string }> => ipcRenderer.invoke('start-tunnel'),
+
+  /** Detener túnel de Cloudflare */
+  stopTunnel: (): Promise<{ success: boolean }> => ipcRenderer.invoke('stop-tunnel'),
+
+  /** Obtener estado del túnel */
+  getTunnelStatus: (): Promise<{ isRunning: boolean; status: string; url: string | null; error: string | null }> =>
+    ipcRenderer.invoke('get-tunnel-status'),
+
   /** Indica que la app corre dentro de Electron */
   isElectron: true,
 });

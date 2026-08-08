@@ -45,13 +45,13 @@ async function startServers(dataDir: string): Promise<void> {
   process.env.PORT = String(FASTIFY_PORT);
   process.env.COLLAB_PORT = String(COLLAB_PORT);
 
-  const { startFastify } = await import('../server/index.js');
   const { startCollab } = await import('../server/collab/index.js');
+  const { startFastify } = await import('../server/index.js');
 
-  await Promise.all([
-    startFastify(FASTIFY_PORT),
-    startCollab(COLLAB_PORT, dataDir),
-  ]);
+  // Iniciar Hocuspocus PRIMERO para que la instancia singleton exista
+  // cuando Fastify llame a attachCollabToHttpServer
+  await startCollab(COLLAB_PORT, dataDir);
+  await startFastify(FASTIFY_PORT);
 }
 
 // --------------------------------------------------------------------------
@@ -221,6 +221,24 @@ function setupIPC(): void {
       mainWindow.show();
       mainWindow.focus();
     }
+  });
+
+  // Túnel Público (Cloudflare)
+  ipcMain.handle('start-tunnel', async () => {
+    const { startCloudflareTunnel } = await import('../server/routes/tunnel.js');
+    const url = await startCloudflareTunnel(FASTIFY_PORT);
+    return { success: true, url };
+  });
+
+  ipcMain.handle('stop-tunnel', async () => {
+    const { stopCloudflareTunnel } = await import('../server/routes/tunnel.js');
+    await stopCloudflareTunnel();
+    return { success: true };
+  });
+
+  ipcMain.handle('get-tunnel-status', async () => {
+    const { getCloudflareTunnelStatus } = await import('../server/routes/tunnel.js');
+    return getCloudflareTunnelStatus();
   });
 }
 

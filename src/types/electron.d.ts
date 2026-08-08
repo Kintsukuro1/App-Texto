@@ -20,6 +20,15 @@ interface ElectronAPI {
   /** Mostrar la ventana principal desde el renderer */
   showWindow: () => void;
 
+  /** Iniciar túnel público de Cloudflare */
+  startTunnel: () => Promise<{ success: boolean; url: string }>;
+
+  /** Detener túnel público de Cloudflare */
+  stopTunnel: () => Promise<{ success: boolean }>;
+
+  /** Estado actual del túnel */
+  getTunnelStatus: () => Promise<{ isRunning: boolean; status: string; url: string | null; error: string | null }>;
+
   /** True cuando la app corre dentro de Electron */
   isElectron: boolean;
 }

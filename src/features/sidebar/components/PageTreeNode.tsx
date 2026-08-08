@@ -132,6 +132,12 @@ export const PageTreeNode = ({
       icon: page.isFavorite ? '★' : '☆',
       action: () => toggleFavorite(page.id),
     },
+    {
+      id: 'toggle-private',
+      label: page.isPrivate ? 'Hacer pública en workspace' : 'Marcar como Privada (🔒)',
+      icon: page.isPrivate ? '🔓' : '🔒',
+      action: () => updatePage(page.id, { isPrivate: !page.isPrivate }),
+    },
     ...(page.parentId
       ? [
           {
@@ -192,7 +198,8 @@ export const PageTreeNode = ({
           <PageIcon icon={page.icon} className="w-4 h-4 rounded object-cover shrink-0" fallback="📄" />
 
           {/* Title */}
-          <span className="truncate">{page.title || 'Sin título'}</span>
+          <span className="truncate flex-1">{page.title || 'Sin título'}</span>
+          {page.isPrivate && <span className="text-[10px] text-rose-400 shrink-0" title="Nota privada">🔒</span>}
         </div>
 
         {/* Hover action: Add Sub-page + */}

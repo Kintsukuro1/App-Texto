@@ -1,22 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Page } from '@/types/page';
 import { useNotesStore } from '@/stores/useNotesStore';
+import { useUiStore } from '@/stores/useUiStore';
 import { Editor } from '@/features/editor/components/Editor';
 import { usePresence } from '@/features/editor/hooks/usePresence';
+import { useMetadataSync } from '@/features/editor/hooks/useMetadataSync';
 import { BacklinksPanel } from './BacklinksPanel';
 import { PageIcon } from '@/components/common/PageIcon';
 import { VersionHistoryModal } from './VersionHistoryModal';
 import { CommentsPanel } from './CommentsPanel';
+import { TableOfContents } from './TableOfContents';
+import { PagePeekPopover } from './PagePeekPopover';
+import { TemplatePickerModal } from '@/features/templates/components/TemplatePickerModal';
+import type { NoteTemplate } from '@/features/templates/data/templates';
 import { exportPageAsMarkdown, exportPageAsHTML } from '@/core/exporter';
 import type { HocuspocusProvider } from '@hocuspocus/provider';
-import { API_BASE_URL } from '@/core/config';
+import { API_BASE_URL, resolveImageUrl } from '@/core/config';
 
 interface PageViewProps {
   page: Page;
 }
 
 export const PageView = ({ page }: PageViewProps) => {
-  const { updatePage, deletePage, toggleFavorite } = useNotesStore();
+  const { updatePage, deletePage, toggleFavorite, setActivePageId, refreshPageMetadata } = useNotesStore();
 
   const [title, setTitle] = useState(page.title);
   const [icon, setIcon] = useState(page.icon || '');
@@ -27,21 +33,52 @@ export const PageView = ({ page }: PageViewProps) => {
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [peekPage, setPeekPage] = useState<Page | null>(null);
+  const [peekPosition, setPeekPosition] = useState<{ x: number; y: number } | null>(null);
   const [commentsCount, setCommentsCount] = useState(0);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
+  const [isPageMenuOpen, setIsPageMenuOpen] = useState(false);
 
   const [collabProvider, setCollabProvider] = useState<HocuspocusProvider | null>(null);
   const presenceUsers = usePresence(collabProvider);
+  const { broadcastMetadata } = useMetadataSync(collabProvider, page);
 
   const titleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const iconFileInputRef = useRef<HTMLInputElement | null>(null);
+  const pageMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setTitle(page.title);
     setIcon(page.icon || '');
     setCoverImage(page.coverImage || '');
-  }, [page.id, page.title, page.icon, page.coverImage]);
+  }, [page.id, page.title, page.icon, page.coverImage, page.isFavorite, page.isPrivate]);
+
+  // Sincronizar metadatos del servidor al navegar a la página (catch-up para cambios remotos)
+  useEffect(() => {
+    refreshPageMetadata(page.id);
+  }, [page.id, refreshPageMetadata]);
+
+  // Cerrar menú de opciones al hacer clic fuera o presionar Esc
+  useEffect(() => {
+    if (!isPageMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (pageMenuRef.current && !pageMenuRef.current.contains(e.target as Node)) {
+        setIsPageMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsPageMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPageMenuOpen]);
 
   const handleTitleChange = (newTitle: string) => {
     setTitle(newTitle);
@@ -50,17 +87,22 @@ export const PageView = ({ page }: PageViewProps) => {
     }
     titleDebounceRef.current = setTimeout(() => {
       updatePage(page.id, { title: newTitle });
+      broadcastMetadata({ title: newTitle });
     }, 400);
   };
 
   const handleIconChange = (newIcon: string) => {
     setIcon(newIcon);
-    updatePage(page.id, { icon: newIcon.trim() ? newIcon : null });
+    const iconValue = newIcon.trim() ? newIcon : null;
+    updatePage(page.id, { icon: iconValue });
+    broadcastMetadata({ icon: iconValue });
   };
 
   const handleCoverChange = (newCover: string) => {
     setCoverImage(newCover);
-    updatePage(page.id, { coverImage: newCover.trim() ? newCover : null });
+    const coverValue = newCover.trim() ? newCover : null;
+    updatePage(page.id, { coverImage: coverValue });
+    broadcastMetadata({ coverImage: coverValue });
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,8 +122,10 @@ export const PageView = ({ page }: PageViewProps) => {
 
       if (res.ok) {
         const data = await res.json();
-        const fullUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
-        handleCoverChange(fullUrl);
+        const relativeUrl = data.url.includes('/uploads/')
+          ? data.url.substring(data.url.indexOf('/uploads/'))
+          : data.url;
+        handleCoverChange(relativeUrl);
         setShowCoverInput(false);
       }
     } catch (err) {
@@ -91,13 +135,34 @@ export const PageView = ({ page }: PageViewProps) => {
     }
   };
 
+  const handleSelectTemplate = (template: NoteTemplate) => {
+    updatePage(page.id, {
+      icon: template.icon,
+      content: JSON.stringify(template.blocks),
+    });
+    broadcastMetadata({ icon: template.icon });
+    if (!page.title || page.title === 'Sin título') {
+      setTitle(template.title);
+      updatePage(page.id, { title: template.title });
+      broadcastMetadata({ title: template.title, icon: template.icon });
+    }
+  };
+
+  const handleHoverBacklink = (p: Page, e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setPeekPage(p);
+    setPeekPosition({ x: rect.left, y: rect.bottom });
+  };
+  const { editorWidth } = useUiStore();
+  const editorWidthClass = editorWidth === 'narrow' ? 'max-w-2xl' : editorWidth === 'full' ? 'max-w-6xl' : 'max-w-4xl';
+
   return (
     <div className="flex-1 flex flex-col h-full bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-y-auto selection:bg-indigo-500 selection:text-white">
       {/* Cover Image Banner */}
       {coverImage ? (
         <div className="relative w-full h-48 sm:h-60 bg-[var(--bg-surface)] overflow-hidden group">
           <img
-            src={coverImage}
+            src={resolveImageUrl(coverImage)}
             alt="Cover"
             className="w-full h-full object-cover object-center"
             onError={() => {
@@ -122,7 +187,7 @@ export const PageView = ({ page }: PageViewProps) => {
       ) : null}
 
       {/* Main Page Container */}
-      <div className="max-w-4xl w-full mx-auto px-8 sm:px-12 pt-8 pb-16 space-y-6 flex-1">
+      <div className={`${editorWidthClass} w-full mx-auto px-8 sm:px-12 pt-8 pb-16 space-y-6 flex-1 transition-all duration-200`}>
         {/* Cover Input Field Modal/Bar */}
         {showCoverInput && (
           <div className="p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-xl space-y-3 animate-fade-in shadow-lg">
@@ -205,22 +270,7 @@ export const PageView = ({ page }: PageViewProps) => {
             )}
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Indicador de Autoguardado en tiempo real (estilo Google Docs / Notion) */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-muted)] text-[11px] font-medium transition-all">
-              {saveStatus === 'saving' ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
-                  <span className="text-amber-400 font-mono">💾 Guardando...</span>
-                </>
-              ) : (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                  <span className="text-[var(--text-secondary)] font-mono">☁️ Guardado en SQLite</span>
-                </>
-              )}
-            </div>
-
+          <div className="flex items-center gap-3">
             {/* Avatares de Presencia en Tiempo Real */}
             {presenceUsers.length > 0 && (
               <div className="flex items-center gap-2 bg-[var(--bg-surface)] px-3 py-1 rounded-full border border-[var(--border-muted)] animate-fade-in">
@@ -242,45 +292,113 @@ export const PageView = ({ page }: PageViewProps) => {
               </div>
             )}
 
-            <button
-              onClick={() => exportPageAsMarkdown(page)}
-              className="hover:text-indigo-400 transition-colors cursor-pointer flex items-center gap-1 text-[11px]"
-              title="Exportar como Markdown (.md)"
-            >
-              📤 .md
-            </button>
+            {/* Menú Único de Opciones de la Página (•••) */}
+            <div className="relative" ref={pageMenuRef}>
+              <button
+                onClick={() => setIsPageMenuOpen(!isPageMenuOpen)}
+                className="px-2.5 py-1 rounded-lg text-xs bg-[var(--bg-surface)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-all cursor-pointer font-bold flex items-center gap-1.5 shadow-sm"
+                title="Opciones de la página"
+              >
+                <span>•••</span>
+                {commentsCount > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
+                )}
+              </button>
 
-            <button
-              onClick={() => exportPageAsHTML(page)}
-              className="hover:text-indigo-400 transition-colors cursor-pointer flex items-center gap-1 text-[11px]"
-              title="Exportar como HTML (.html)"
-            >
-              📄 .html
-            </button>
+              {isPageMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-2xl z-40 py-1.5 text-xs animate-fade-in divide-y divide-[var(--border-muted)]">
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        setIsCommentsOpen(!isCommentsOpen);
+                        setIsPageMenuOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left flex items-center justify-between text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer font-medium"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>💬</span>
+                        <span>Comentarios</span>
+                      </span>
+                      {commentsCount > 0 && (
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-600 text-white font-bold">
+                          {commentsCount}
+                        </span>
+                      )}
+                    </button>
 
-            <button
-              onClick={() => setIsCommentsOpen(!isCommentsOpen)}
-              className="hover:text-indigo-400 transition-colors cursor-pointer flex items-center gap-1"
-              title="Comentarios"
-            >
-              💬 Comentarios {commentsCount > 0 && <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-600 text-white font-bold">{commentsCount}</span>}
-            </button>
+                    <button
+                      onClick={() => {
+                        setIsVersionHistoryOpen(true);
+                        setIsPageMenuOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left flex items-center gap-2 text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer font-medium"
+                    >
+                      <span>📜</span>
+                      <span>Historial de versiones</span>
+                    </button>
 
-            <button
-              onClick={() => setIsVersionHistoryOpen(true)}
-              className="hover:text-indigo-400 transition-colors cursor-pointer flex items-center gap-1"
-              title="Historial de versiones"
-            >
-              📜 Historial
-            </button>
+                    <button
+                      onClick={() => {
+                        setIsTemplateModalOpen(true);
+                        setIsPageMenuOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left flex items-center gap-2 text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer font-medium"
+                    >
+                      <span>📑</span>
+                      <span>Usar plantilla</span>
+                    </button>
+                  </div>
 
-            <button
-              onClick={() => deletePage(page.id)}
-              className="hover:text-rose-400 transition-colors cursor-pointer"
-              title="Eliminar nota"
-            >
-              🗑️ Eliminar
-            </button>
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        exportPageAsMarkdown(page);
+                        setIsPageMenuOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left flex items-center gap-2 text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer font-medium"
+                    >
+                      <span>📤</span>
+                      <span>Exportar Markdown (.md)</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        exportPageAsHTML(page);
+                        setIsPageMenuOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left flex items-center gap-2 text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer font-medium"
+                    >
+                      <span>📄</span>
+                      <span>Exportar HTML (.html)</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        window.print();
+                        setIsPageMenuOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left flex items-center gap-2 text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer font-medium"
+                    >
+                      <span>🖨️</span>
+                      <span>Imprimir / Exportar PDF</span>
+                    </button>
+                  </div>
+
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        deletePage(page.id);
+                        setIsPageMenuOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left flex items-center gap-2 text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer font-medium"
+                    >
+                      <span>🗑️</span>
+                      <span>Eliminar página</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -343,8 +461,10 @@ export const PageView = ({ page }: PageViewProps) => {
                         });
                         if (res.ok) {
                           const data = await res.json();
-                          const fullUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
-                          handleIconChange(fullUrl);
+                          const relativeUrl = data.url.includes('/uploads/')
+                            ? data.url.substring(data.url.indexOf('/uploads/'))
+                            : data.url;
+                          handleIconChange(relativeUrl);
                           setShowIconInput(false);
                         }
                       } catch (err) {
@@ -399,7 +519,10 @@ export const PageView = ({ page }: PageViewProps) => {
         {/* Title & Favorite Row */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => toggleFavorite(page.id)}
+            onClick={() => {
+              toggleFavorite(page.id);
+              broadcastMetadata({ isFavorite: !page.isFavorite });
+            }}
             className={`p-2 rounded-xl border transition-all cursor-pointer text-xl flex items-center justify-center shrink-0 ${
               page.isFavorite
                 ? 'bg-amber-500/15 border-amber-500/30 text-amber-400 hover:bg-amber-500/25 shadow-sm shadow-amber-500/10'
@@ -408,6 +531,23 @@ export const PageView = ({ page }: PageViewProps) => {
             title={page.isFavorite ? 'Quitar de favoritos' : 'Marcar como favorita'}
           >
             {page.isFavorite ? '★' : '☆'}
+          </button>
+
+          {/* Toggle Nota Privada 🔒 */}
+          <button
+            onClick={() => {
+              const newPrivate = !page.isPrivate;
+              updatePage(page.id, { isPrivate: newPrivate });
+              broadcastMetadata({ isPrivate: newPrivate });
+            }}
+            className={`px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+              page.isPrivate
+                ? 'bg-rose-500/15 border-rose-500/30 text-rose-400 hover:bg-rose-500/25 shadow-sm'
+                : 'bg-[var(--bg-surface)] border-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+            title={page.isPrivate ? 'Nota privada (solo visible para ti)' : 'Nota pública (visible para todos en el workspace)'}
+          >
+            <span>{page.isPrivate ? '🔒 Privada' : '🔓 Compartida'}</span>
           </button>
           <input
             type="text"
@@ -430,6 +570,7 @@ export const PageView = ({ page }: PageViewProps) => {
                 onClick={() => {
                   const nextTags = (page.tags || []).filter((t) => t !== tag);
                   updatePage(page.id, { tags: nextTags });
+                  broadcastMetadata({ tags: nextTags });
                 }}
                 className="hover:text-rose-400 transition-colors text-[10px] ml-0.5 cursor-pointer"
               >
@@ -446,7 +587,9 @@ export const PageView = ({ page }: PageViewProps) => {
                 const cleaned = tag.trim().replace(/^#/, '').toLowerCase();
                 const existing = page.tags || [];
                 if (!existing.includes(cleaned)) {
-                  updatePage(page.id, { tags: [...existing, cleaned] });
+                  const newTags = [...existing, cleaned];
+                  updatePage(page.id, { tags: newTags });
+                  broadcastMetadata({ tags: newTags });
                 }
               }
             }}
@@ -467,13 +610,19 @@ export const PageView = ({ page }: PageViewProps) => {
               updatePage(page.id, { content: newContent })
             }
             onProviderReady={(prov) => setCollabProvider(prov)}
-            onSavingStatusChange={(status) => setSaveStatus(status)}
           />
         </div>
 
-        {/* Backlinks Panel */}
-        <BacklinksPanel currentPage={page} />
+        {/* Backlinks Panel con soporte Hover Peek */}
+        <BacklinksPanel
+          currentPage={page}
+          onHoverPage={handleHoverBacklink}
+          onLeavePage={() => setPeekPage(null)}
+        />
       </div>
+
+      {/* Tabla de Contenidos Automática Flotante */}
+      <TableOfContents content={page.content} />
 
       {/* Modal de Historial de Versiones */}
       <VersionHistoryModal
@@ -488,6 +637,21 @@ export const PageView = ({ page }: PageViewProps) => {
         isOpen={isCommentsOpen}
         onClose={() => setIsCommentsOpen(false)}
         onCommentsCountChange={(cnt) => setCommentsCount(cnt)}
+      />
+
+      {/* Modal de Selección de Plantillas */}
+      <TemplatePickerModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        onSelectTemplate={handleSelectTemplate}
+      />
+
+      {/* Previsualización Flotante Peek */}
+      <PagePeekPopover
+        page={peekPage}
+        position={peekPosition}
+        onClose={() => setPeekPage(null)}
+        onNavigate={(pId) => setActivePageId(pId)}
       />
     </div>
   );

@@ -1,13 +1,56 @@
 import { useEffect, useRef, useState } from 'react';
-import { useCreateBlockNote } from '@blocknote/react';
+import { useCreateBlockNote, SuggestionMenuController } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/shadcn';
-import type { PartialBlock } from '@blocknote/core';
+import { BlockNoteSchema, defaultBlockSpecs, filterSuggestionItems, type PartialBlock } from '@blocknote/core';
 import * as Y from 'yjs';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useUiStore } from '@/stores/useUiStore';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { API_BASE_URL } from '@/core/config';
+import { API_BASE_URL, resolveImageUrl } from '@/core/config';
+import { CalloutBlock } from '../blocks/CalloutBlock';
+import { WebBookmarkBlock } from '../blocks/WebBookmarkBlock';
+import {
+  DatabaseTableBlock,
+  DatabaseBoardBlock,
+  DatabaseGalleryBlock,
+  DatabaseListBlock,
+  DatabaseFeedBlock,
+  DatabaseDashboardBlock,
+  DatabaseCalendarBlock,
+  DatabaseTimelineBlock,
+  DatabaseFormBlock,
+} from '../blocks/DatabaseBlocks';
+import {
+  ChartVerticalBarBlock,
+  ChartHorizontalBarBlock,
+  ChartLineBlock,
+  ChartDonutBlock,
+  ChartNumberBlock,
+} from '../blocks/ChartBlocks';
+import { getNotionSlashMenuItems } from '../config/getNotionSlashMenuItems';
 import '@blocknote/shadcn/style.css';
+
+const schema = BlockNoteSchema.create({
+  blockSpecs: {
+    ...defaultBlockSpecs,
+    callout: CalloutBlock(),
+    webBookmark: WebBookmarkBlock(),
+    databaseTable: DatabaseTableBlock(),
+    databaseBoard: DatabaseBoardBlock(),
+    databaseGallery: DatabaseGalleryBlock(),
+    databaseList: DatabaseListBlock(),
+    databaseFeed: DatabaseFeedBlock(),
+    databaseDashboard: DatabaseDashboardBlock(),
+    databaseCalendar: DatabaseCalendarBlock(),
+    databaseTimeline: DatabaseTimelineBlock(),
+    databaseForm: DatabaseFormBlock(),
+    chartVerticalBar: ChartVerticalBarBlock(),
+    chartHorizontalBar: ChartHorizontalBarBlock(),
+    chartLine: ChartLineBlock(),
+    chartDonut: ChartDonutBlock(),
+    chartNumber: ChartNumberBlock(),
+  },
+});
 
 interface EditorProps {
   pageId: string;
@@ -40,7 +83,10 @@ export const Editor = ({
     const doc = new Y.Doc();
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsHost = window.location.hostname || 'localhost';
-    const wsUrl = `${wsProtocol}//${wsHost}:1234`;
+    const wsUrl =
+      window.location.port === '5173'
+        ? `${wsProtocol}//${wsHost}:1234`
+        : `${wsProtocol}//${wsHost}${window.location.port ? `:${window.location.port}` : ''}/collab`;
 
     const hocusProvider = new HocuspocusProvider({
       url: wsUrl,
@@ -104,28 +150,30 @@ export const Editor = ({
     }
 
     const data = await res.json();
-    return data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
+    return resolveImageUrl(data.url);
   };
 
   // Crear editor de BlockNote con o sin colaboración
   const editor = useCreateBlockNote(
     provider && ydoc
       ? {
-          collaboration: {
-            provider,
-            fragment: ydoc.getXmlFragment('blocknote'),
-            user: {
-              name: user?.username || 'Anónimo',
-              color: user?.color || '#6366f1',
-            },
-            showCursorLabels: 'activity',
+        schema,
+        collaboration: {
+          provider,
+          fragment: ydoc.getXmlFragment('blocknote'),
+          user: {
+            name: user?.username || 'Anónimo',
+            color: user?.color || '#6366f1',
           },
-          uploadFile: handleUploadFile,
-        }
-      : {
-          initialContent: parseInitialContent(),
-          uploadFile: handleUploadFile,
+          showCursorLabels: 'activity',
         },
+        uploadFile: handleUploadFile,
+      }
+      : {
+        schema,
+        initialContent: parseInitialContent(),
+        uploadFile: handleUploadFile,
+      },
     [provider, ydoc, user?.username, user?.color]
   );
 
@@ -219,7 +267,14 @@ export const Editor = ({
         editable={!readOnly}
         onChange={handleChange}
         theme={theme === 'light' ? 'light' : 'dark'}
-      />
+      >
+        <SuggestionMenuController
+          triggerCharacter="/"
+          getItems={async (query) =>
+            filterSuggestionItems(getNotionSlashMenuItems(editor), query)
+          }
+        />
+      </BlockNoteView>
     </div>
   );
 };

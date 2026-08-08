@@ -9,6 +9,7 @@ export interface Page {
   parentId?: string | null;
   tags?: string[];
   isFavorite: boolean;
+  isPrivate?: boolean;
   createdAt: string | Date;
   updatedAt: string | Date;
 }

@@ -11,6 +11,9 @@ import { commentsRoutes } from './routes/comments';
 import { authRoutes } from './routes/auth';
 import { workspaceRoutes } from './routes/workspace';
 import { uploadRoutes } from './routes/upload';
+import { backupRoutes } from './routes/backup';
+import { tunnelRoutes } from './routes/tunnel';
+import { attachCollabToHttpServer } from './collab/index';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 
@@ -82,7 +85,7 @@ export async function startFastify(port: number = PORT): Promise<void> {
         reply.status(404).send({ error: 'Ruta no encontrada', statusCode: 404 });
       } else {
         reply.status(404).type('text/html').send(`
-          <!Token html>
+          <!DOCTYPE html>
           <html>
             <head><title>Notion Local - Servidor Dev</title></head>
             <body style="font-family: sans-serif; background: #1a1d23; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
@@ -110,10 +113,20 @@ export async function startFastify(port: number = PORT): Promise<void> {
   await server.register(commentsRoutes, { prefix: '/api/pages' });
   await server.register(workspaceRoutes, { prefix: '/api/workspace' });
   await server.register(uploadRoutes, { prefix: '/api/upload' });
+  await server.register(backupRoutes, { prefix: '/api/backup' });
+  await server.register(tunnelRoutes, { prefix: '/api/tunnel' });
 
   try {
     await server.listen({ port, host: '0.0.0.0' });
     console.log(`Servidor Fastify corriendo en http://localhost:${port}`);
+
+    // Conectar Hocuspocus al servidor HTTP de Fastify DESPUÉS de que esté escuchando.
+    // Esto permite que las conexiones WebSocket de /collab lleguen a la misma instancia
+    // de Hocuspocus que atiende las conexiones directas en el puerto 1234.
+    const httpServer = server.server;
+    if (httpServer) {
+      attachCollabToHttpServer(httpServer);
+    }
   } catch (err) {
     server.log.error(err);
     throw err;

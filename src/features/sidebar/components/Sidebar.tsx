@@ -6,8 +6,8 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { PageTreeNode } from '@/features/sidebar/components/PageTreeNode';
 import { WorkspaceSelector } from '@/features/sidebar/components/WorkspaceSelector';
 import { PageIcon } from '@/components/common/PageIcon';
-import { parseMarkdownToBlocks } from '@/core/importer';
 import { vocabulary } from '@/core/vocabulary';
+import { ObsidianImporterModal } from '@/features/importer/components/ObsidianImporterModal';
 import type { Page } from '@/types/page';
 
 const RootDropZone = () => {
@@ -55,28 +55,13 @@ const RootDropZone = () => {
 };
 
 export const Sidebar = () => {
-  const { pages, activePageId, recentPageIds, setActivePageId, createPage } = useNotesStore();
+  const { pages, activePageId, recentPageIds, setActivePageId, createPage, getOrCreateDailyNote } = useNotesStore();
   const { isSidebarCollapsed, toggleSidebar, setSearchOpen, isHubActive, setHubActive, setProfileOpen } = useUiStore();
   const { user, logout } = useAuthStore();
   const { activeWorkspaceId } = useWorkspaceStore();
 
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-
-  const handleImportMarkdown = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const text = event.target?.result as string;
-      if (text) {
-        const { title, blocks } = parseMarkdownToBlocks(text);
-        await createPage(title, JSON.stringify(blocks));
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
 
   const allPagesList = Object.values(pages).filter(
     (p) => !p.workspaceId || p.workspaceId === activeWorkspaceId
@@ -155,6 +140,21 @@ export const Sidebar = () => {
               <span>Inicio</span>
             </button>
 
+            {/* "Nota Diaria" Button */}
+            <button
+              onClick={() => getOrCreateDailyNote()}
+              className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-150 flex items-center justify-between text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] border border-transparent cursor-pointer group"
+              title="Nota Diaria (Ctrl+D)"
+            >
+              <div className="flex items-center gap-2">
+                <span className="shrink-0 text-sm">📅</span>
+                <span>Nota Diaria</span>
+              </div>
+              <kbd className="px-1 py-0.5 text-[9px] font-mono bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded text-[var(--text-secondary)]">
+                Ctrl D
+              </kbd>
+            </button>
+
             {/* Search Trigger Button */}
             <button
               onClick={() => setSearchOpen(true)}
@@ -181,15 +181,13 @@ export const Sidebar = () => {
                 <span className="text-[10px] text-indigo-400/70">+</span>
               </button>
 
-              <label className="py-1.5 px-2 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium transition-all cursor-pointer flex items-center justify-center shrink-0" title="Importar archivo Markdown (.md)">
+              <button
+                onClick={() => setIsImporterOpen(true)}
+                className="py-1.5 px-2 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium transition-all cursor-pointer flex items-center justify-center shrink-0"
+                title="Importar Vault de Obsidian o archivos Markdown (.md)"
+              >
                 <span>📥</span>
-                <input
-                  type="file"
-                  accept=".md,.txt"
-                  className="hidden"
-                  onChange={handleImportMarkdown}
-                />
-              </label>
+              </button>
             </div>
           </div>
         )}
@@ -207,6 +205,13 @@ export const Sidebar = () => {
               title="Inicio (Hub)"
             >
               🏠
+            </button>
+            <button
+              onClick={() => getOrCreateDailyNote()}
+              className="p-2 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer text-xs"
+              title="Nota Diaria (Ctrl+D)"
+            >
+              📅
             </button>
             <button
               onClick={() => setSearchOpen(true)}
@@ -347,6 +352,12 @@ export const Sidebar = () => {
           )}
         </div>
       )}
+
+      {/* Modal de Importación de Obsidian / Markdown */}
+      <ObsidianImporterModal
+        isOpen={isImporterOpen}
+        onClose={() => setIsImporterOpen(false)}
+      />
     </aside>
   );
 };
