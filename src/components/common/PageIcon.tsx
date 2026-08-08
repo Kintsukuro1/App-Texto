@@ -4,7 +4,7 @@ import { resolveImageUrl } from '@/core/config';
 interface PageIconProps {
   icon?: string | null;
   className?: string;
-  fallback?: string;
+  fallback?: React.ReactNode;
 }
 
 export const isImageIcon = (icon?: string | null): boolean => {

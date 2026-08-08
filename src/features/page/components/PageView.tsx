@@ -12,6 +12,7 @@ import { CommentsPanel } from './CommentsPanel';
 import { TableOfContents } from './TableOfContents';
 import { PagePeekPopover } from './PagePeekPopover';
 import { PagePropertiesHeader } from './PagePropertiesHeader';
+import { Breadcrumbs } from '@/components/common/Breadcrumbs';
 import { TemplatePickerModal } from '@/features/templates/components/TemplatePickerModal';
 import type { NoteTemplate } from '@/features/templates/data/templates';
 import { exportPageAsMarkdown, exportPageAsHTML } from '@/core/exporter';
@@ -188,7 +189,9 @@ export const PageView = ({ page }: PageViewProps) => {
       ) : null}
 
       {/* Main Page Container */}
-      <div className={`${editorWidthClass} w-full mx-auto px-8 sm:px-12 pt-8 pb-16 space-y-6 flex-1 transition-all duration-200`}>
+      <div className={`${editorWidthClass} w-full mx-auto px-8 sm:px-12 pt-6 pb-16 space-y-5 flex-1 transition-all duration-200`}>
+        {/* Breadcrumbs Inteligentes */}
+        <Breadcrumbs currentPage={page} />
         {/* Cover Input Field Modal/Bar */}
         {showCoverInput && (
           <div className="p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-xl space-y-3 animate-fade-in shadow-lg">

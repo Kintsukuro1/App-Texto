@@ -9,6 +9,20 @@ import { PageIcon } from '@/components/common/PageIcon';
 import { vocabulary } from '@/core/vocabulary';
 import { ObsidianImporterModal } from '@/features/importer/components/ObsidianImporterModal';
 import type { Page } from '@/types/page';
+import {
+  Home,
+  Calendar,
+  Search,
+  Plus,
+  Upload,
+  Star,
+  Clock,
+  BookOpen,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Tag,
+  FolderDown,
+} from 'lucide-react';
 
 const RootDropZone = () => {
   const { updatePage } = useNotesStore();
@@ -43,13 +57,14 @@ const RootDropZone = () => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`mt-2 p-2 rounded-xl border-2 border-dashed text-[11px] text-center transition-all ${
+      className={`mt-2 p-2 rounded-xl border-2 border-dashed text-[11px] text-center transition-all flex items-center justify-center gap-1.5 ${
         isDragOver
           ? 'bg-indigo-600/30 border-indigo-400 text-indigo-300 font-medium scale-[1.02]'
           : 'border-transparent text-transparent hover:border-[var(--border-muted)] hover:text-[var(--text-muted)]'
       }`}
     >
-      {isDragOver ? '📥 Soltar para mover a nivel raíz' : 'Mover a nivel raíz'}
+      <FolderDown className="w-3.5 h-3.5" />
+      <span>{isDragOver ? 'Soltar para mover a nivel raíz' : 'Mover a nivel raíz'}</span>
     </div>
   );
 };
@@ -117,10 +132,10 @@ export const Sidebar = () => {
           {!isSidebarCollapsed && <WorkspaceSelector />}
           <button
             onClick={toggleSidebar}
-            className="p-1.5 rounded-lg bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-muted)] transition-colors cursor-pointer text-xs font-mono ml-auto"
+            className="p-1.5 rounded-lg bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-muted)] transition-colors cursor-pointer text-xs font-mono ml-auto flex items-center justify-center"
             title={isSidebarCollapsed ? 'Expandir Sidebar' : 'Colapsar Sidebar'}
           >
-            {isSidebarCollapsed ? '➡️' : '⬅️'}
+            {isSidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
           </button>
         </div>
 
@@ -136,7 +151,7 @@ export const Sidebar = () => {
               }`}
               title="Inicio (Hub)"
             >
-              <span className="shrink-0 text-sm">🏠</span>
+              <Home className="w-4 h-4 shrink-0 text-indigo-400" />
               <span>Inicio</span>
             </button>
 
@@ -147,7 +162,7 @@ export const Sidebar = () => {
               title="Nota Diaria (Ctrl+D)"
             >
               <div className="flex items-center gap-2">
-                <span className="shrink-0 text-sm">📅</span>
+                <Calendar className="w-4 h-4 shrink-0 text-amber-400" />
                 <span>Nota Diaria</span>
               </div>
               <kbd className="px-1 py-0.5 text-[9px] font-mono bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded text-[var(--text-secondary)]">
@@ -161,9 +176,7 @@ export const Sidebar = () => {
               className="w-full py-1.5 px-2.5 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium transition-all duration-150 cursor-pointer flex items-center justify-between group"
             >
               <div className="flex items-center gap-2">
-                <span className="text-[var(--text-secondary)] group-hover:text-indigo-400 transition-colors">
-                  🔍
-                </span>
+                <Search className="w-4 h-4 text-[var(--text-secondary)] group-hover:text-indigo-400 transition-colors" />
                 <span>Buscar...</span>
               </div>
               <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded text-[var(--text-secondary)]">
@@ -177,16 +190,18 @@ export const Sidebar = () => {
                 onClick={() => createPage()}
                 className="flex-1 py-1.5 px-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 hover:border-indigo-500/50 text-indigo-300 text-xs font-medium transition-all duration-150 cursor-pointer flex items-center justify-between shadow-sm"
               >
-                <span>+ Nueva {vocabulary.page}</span>
-                <span className="text-[10px] text-indigo-400/70">+</span>
+                <div className="flex items-center gap-1.5">
+                  <Plus className="w-4 h-4 text-indigo-400" />
+                  <span>Nueva {vocabulary.page}</span>
+                </div>
               </button>
 
               <button
                 onClick={() => setIsImporterOpen(true)}
-                className="py-1.5 px-2 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium transition-all cursor-pointer flex items-center justify-center shrink-0"
+                className="py-1.5 px-2.5 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium transition-all cursor-pointer flex items-center justify-center shrink-0"
                 title="Importar Vault de Obsidian o archivos Markdown (.md)"
               >
-                <span>📥</span>
+                <Upload className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -204,28 +219,28 @@ export const Sidebar = () => {
               }`}
               title="Inicio (Hub)"
             >
-              🏠
+              <Home className="w-4 h-4" />
             </button>
             <button
               onClick={() => getOrCreateDailyNote()}
               className="p-2 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer text-xs"
               title="Nota Diaria (Ctrl+D)"
             >
-              📅
+              <Calendar className="w-4 h-4 text-amber-400" />
             </button>
             <button
               onClick={() => setSearchOpen(true)}
               className="p-2 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer text-xs"
               title="Buscar (Ctrl+K)"
             >
-              🔍
+              <Search className="w-4 h-4" />
             </button>
             <button
               onClick={() => createPage()}
               className="p-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 transition-colors cursor-pointer text-xs"
               title={`Nueva ${vocabulary.page}`}
             >
-              ➕
+              <Plus className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -234,7 +249,10 @@ export const Sidebar = () => {
         {!isSidebarCollapsed && allTags.length > 0 && (
           <div className="px-1 pt-1 space-y-1">
             <div className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase flex items-center justify-between">
-              <span>🏷️ Etiquetas</span>
+              <div className="flex items-center gap-1">
+                <Tag className="w-3 h-3 text-indigo-400" />
+                <span>Etiquetas</span>
+              </div>
               {selectedTag && (
                 <button
                   onClick={() => setSelectedTag(null)}
@@ -269,7 +287,7 @@ export const Sidebar = () => {
             {favorites.length > 0 && !selectedTag && (
               <div className="space-y-1">
                 <div className="px-2 text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase flex items-center gap-1">
-                  <span>⭐</span>
+                  <Star className="w-3 h-3 text-amber-400" />
                   <span>Favoritos</span>
                 </div>
                 <div className="space-y-0.5">
@@ -282,7 +300,7 @@ export const Sidebar = () => {
             {recentPages.length > 0 && !selectedTag && (
               <div className="space-y-1">
                 <div className="px-2 text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase flex items-center gap-1">
-                  <span>🕒</span>
+                  <Clock className="w-3 h-3 text-indigo-400" />
                   <span>Recientes</span>
                 </div>
                 <div className="space-y-0.5">
@@ -294,7 +312,7 @@ export const Sidebar = () => {
             {/* Sección 3: Árbol de Notas (Jerarquía) */}
             <div className="space-y-1">
               <div className="px-2 text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase flex items-center gap-1">
-                <span>📚</span>
+                <BookOpen className="w-3 h-3 text-indigo-400" />
                 <span>{selectedTag ? `Filtrado por #${selectedTag}` : 'Todas las notas'}</span>
               </div>
               {rootPages.length > 0 ? (
