@@ -249,7 +249,7 @@ export const Editor = ({
   }, []);
 
   const handleChange = () => {
-    // Si el proveedor colaborativo aún no se ha inicializado o sincronizado, evitar guardar para prevenir el vaciado accidental
+    // Si el proveedor colaborativo aún no se ha inicializado, evitar guardar para prevenir el vaciado accidental
     if (provider && !isInitializedRef.current) {
       return;
     }
@@ -257,8 +257,14 @@ export const Editor = ({
     const currentBlocks = editor.document as PartialBlock[];
     const parsedInitial = parseInitialContent(initialContentRef.current);
 
-    // Guardia anti-vaciado: Si el editor reporta vaciedad pero la nota guardada contenía bloques válidos y Yjs no está sincronizado
-    if (isBlockContentEmpty(currentBlocks) && parsedInitial && !isBlockContentEmpty(parsedInitial) && provider && !provider.isSynced) {
+    // Guardia Absoluta Anti-Vaciado: Si el editor está en blanco pero SQLite tenía contenido guardado válido,
+    // re-intentar la siembra y NUNCA sobreescribir la base de datos con vaciedad por error.
+    if (isBlockContentEmpty(currentBlocks) && parsedInitial && !isBlockContentEmpty(parsedInitial)) {
+      try {
+        editor.replaceBlocks(editor.document, parsedInitial);
+      } catch (err) {
+        console.error('Error al re-sembrar contenido en la guardia anti-vaciado:', err);
+      }
       return;
     }
 
