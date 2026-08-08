@@ -32,7 +32,6 @@ export const PageView = ({ page }: PageViewProps) => {
   const [showCoverInput, setShowCoverInput] = useState(false);
   const [showIconInput, setShowIconInput] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
-  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -47,7 +46,6 @@ export const PageView = ({ page }: PageViewProps) => {
 
   const titleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const iconFileInputRef = useRef<HTMLInputElement | null>(null);
   const pageMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -162,7 +160,7 @@ export const PageView = ({ page }: PageViewProps) => {
     <div className="flex-1 flex flex-col h-full bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-y-auto selection:bg-indigo-500 selection:text-white">
       {/* Cover Image Banner */}
       {coverImage ? (
-        <div className="relative w-full h-48 sm:h-60 bg-[var(--bg-surface)] overflow-hidden group">
+        <div className="relative w-full h-64 sm:h-72 bg-[var(--bg-surface)] overflow-hidden group">
           <img
             src={resolveImageUrl(coverImage)}
             alt="Cover"
@@ -171,27 +169,40 @@ export const PageView = ({ page }: PageViewProps) => {
               // Graceful fallback if image URL fails to load
             }}
           />
-          <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--bg-surface)]/80 backdrop-blur-md p-1.5 rounded-xl border border-[var(--border-muted)]">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--bg-primary)]/20 to-[var(--bg-primary)]" />
+          <div className="absolute top-4 right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--bg-surface)]/80 backdrop-blur-md p-1.5 rounded-xl border border-[var(--border-muted)]">
             <button
               onClick={() => setShowCoverInput(!showCoverInput)}
-              className="px-2.5 py-1 text-xs text-[var(--text-primary)] hover:text-white bg-[var(--bg-primary)] rounded-lg transition-colors cursor-pointer"
+              className="px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:text-white bg-[var(--bg-primary)] rounded-lg transition-colors cursor-pointer"
             >
               Cambiar portada
             </button>
             <button
               onClick={() => handleCoverChange('')}
-              className="px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors cursor-pointer"
+              className="px-3 py-1.5 text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors cursor-pointer"
             >
               Quitar
             </button>
           </div>
+
+          {/* Floating Icon Overlaid on Cover (Google Stitch Style) */}
+          {(icon || showIconInput) && (
+            <div
+              onClick={() => setShowIconInput(!showIconInput)}
+              className="absolute -bottom-10 left-8 sm:left-12 w-24 h-24 sm:w-28 sm:h-28 bg-[var(--bg-surface)] rounded-2xl border-2 border-[var(--border-muted)] flex items-center justify-center text-5xl shadow-2xl ring-4 ring-[var(--bg-primary)] hover:scale-105 transition-transform duration-300 cursor-pointer overflow-hidden z-20"
+              title="Cambiar ícono de nota"
+            >
+              <PageIcon icon={icon} className="w-full h-full object-cover" fallback="🌌" />
+            </div>
+          )}
         </div>
       ) : null}
 
       {/* Main Page Container */}
-      <div className={`${editorWidthClass} w-full mx-auto px-8 sm:px-12 pt-6 pb-16 space-y-5 flex-1 transition-all duration-200`}>
+      <div className={`${editorWidthClass} w-full mx-auto px-6 sm:px-12 ${coverImage ? 'pt-12' : 'pt-6'} pb-16 space-y-5 flex-1 transition-all duration-200`}>
         {/* Breadcrumbs Inteligentes */}
         <Breadcrumbs currentPage={page} />
+
         {/* Cover Input Field Modal/Bar */}
         {showCoverInput && (
           <div className="p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-xl space-y-3 animate-fade-in shadow-lg">
@@ -252,7 +263,7 @@ export const PageView = ({ page }: PageViewProps) => {
         )}
 
         {/* Action Controls & Active Presence Avatars */}
-        <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">
+        <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] pt-1">
           <div className="flex items-center gap-3">
             {!icon && !showIconInput && (
               <button
@@ -406,8 +417,8 @@ export const PageView = ({ page }: PageViewProps) => {
           </div>
         </div>
 
-        {/* Icon Display / Input Controls */}
-        {(icon || showIconInput) && (
+        {/* Floating Icon Input Panel (if cover isn't present or opened manually) */}
+        {!coverImage && (icon || showIconInput) && (
           <div className="space-y-3 animate-fade-in">
             <div className="flex items-center gap-4">
               <div
@@ -432,96 +443,11 @@ export const PageView = ({ page }: PageViewProps) => {
                 </button>
               </div>
             </div>
-
-            {/* Subpanel de selección de Ícono (Emoji, Subir Imagen/GIF o URL) */}
-            {showIconInput && (
-              <div className="p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-xl space-y-3 animate-fade-in shadow-md max-w-lg">
-                <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] font-medium">
-                  <span>Seleccionar ícono de página (Emoji, Imagen o GIF)</span>
-                  <button
-                    onClick={() => setShowIconInput(false)}
-                    className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="file"
-                    ref={iconFileInputRef}
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setIsUploadingIcon(true);
-                      try {
-                        const formData = new FormData();
-                        formData.append('file', file);
-                        const res = await fetch(`${API_BASE_URL}/api/upload`, {
-                          method: 'POST',
-                          credentials: 'include',
-                          body: formData,
-                        });
-                        if (res.ok) {
-                          const data = await res.json();
-                          const relativeUrl = data.url.includes('/uploads/')
-                            ? data.url.substring(data.url.indexOf('/uploads/'))
-                            : data.url;
-                          handleIconChange(relativeUrl);
-                          setShowIconInput(false);
-                        }
-                      } catch (err) {
-                        console.error('Error al subir ícono:', err);
-                      } finally {
-                        setIsUploadingIcon(false);
-                      }
-                    }}
-                    className="hidden"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => iconFileInputRef.current?.click()}
-                    disabled={isUploadingIcon}
-                    className="px-3 py-2 text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
-                  >
-                    {isUploadingIcon ? (
-                      <>
-                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Subiendo...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>📁</span>
-                        <span>Subir Imagen / GIF</span>
-                      </>
-                    )}
-                  </button>
-
-                  <div className="flex-1 flex gap-2">
-                    <input
-                      type="text"
-                      value={icon}
-                      onChange={(e) => handleIconChange(e.target.value)}
-                      placeholder="Emoji (😀) o URL de imagen..."
-                      className="flex-1 px-3 py-2 text-xs bg-[var(--bg-primary)] border border-[var(--border-muted)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-indigo-500"
-                    />
-                    <button
-                      onClick={() => setShowIconInput(false)}
-                      className="px-3 py-2 text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] rounded-lg transition-colors"
-                    >
-                      Listo
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
         {/* Title & Favorite Row */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 pt-2">
           <button
             onClick={() => {
               toggleFavorite(page.id);
@@ -583,7 +509,7 @@ export const PageView = ({ page }: PageViewProps) => {
             </span>
           ))}
 
-          {/* Add Tag Input / Button */}
+          {/* Add Tag Button */}
           <button
             onClick={() => {
               const tag = prompt('Nombre de la etiqueta (ej. trabajo, idea):');
@@ -607,8 +533,11 @@ export const PageView = ({ page }: PageViewProps) => {
         {/* Cabecera de Propiedades Estructuradas (Metadata Header) */}
         <PagePropertiesHeader page={page} />
 
+        {/* Gradient Divider Line (Google Stitch Style) */}
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-[var(--border-muted)] to-transparent my-4" />
+
         {/* Rich Text Editor */}
-        <div className="pt-4 border-t border-[var(--border-muted)]">
+        <div className="pt-2">
           <Editor
             key={page.id}
             pageId={page.id}
