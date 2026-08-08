@@ -2,6 +2,7 @@
   "name": "notion-local",
   "private": true,
   "version": "1.0.0",
+  "author": "Notion Local",
   "description": "App de escritorio privada y colaborativa para gestión de conocimiento.",
   "type": "module",
   "main": "dist-electron/main.cjs",

@@ -100,7 +100,12 @@ export const useUiStore = create<UiState>()(
       setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
       setNotificationSound: (notificationSound) => set({ notificationSound }),
       setTrashRetentionDays: (trashRetentionDays) => set({ trashRetentionDays }),
-      setAutoStartWindows: (autoStartWindows) => set({ autoStartWindows }),
+      setAutoStartWindows: (autoStartWindows) => {
+        set({ autoStartWindows });
+        if (typeof window !== 'undefined' && window.electronAPI?.setAutoLaunch) {
+          window.electronAPI.setAutoLaunch(autoStartWindows).catch(console.error);
+        }
+      },
     }),
     {
       name: 'notion-local-ui',

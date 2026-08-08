@@ -43,7 +43,7 @@
 - [x] **Rutas de datos del sistema**: Mover las bases de datos SQLite a `AppData` del sistema (`app.getPath('userData')`)
 - [x] **IPC (Inter-Process Communication)**: `get-server-info` expone puerto, puerto collab e IP local
 - [x] **Auth WebSocket mejorada**: Token pasado directamente al provider (sin depender de cookies entre puertos)
-- [ ] **Build Script**: `electron-builder` → genera `.exe` instalable para Windows *(pendiente validar)*
+- [x] **Build Script**: `electron-builder` → genera `.exe` instalable para Windows (validado y empaquetado)
 
 ### 2.2 Experiencia LAN & Servidor Web
 - [x] **Detección automática de IP local**: `getLocalIP()` en el main process
@@ -54,7 +54,7 @@
 - [x] **System Tray**: La app corre en segundo plano con ícono en la bandeja. Menú: Abrir, Estado del servidor, Salir
 
 ### 2.3 Mantenimiento & Sistema
-- [ ] **Arranque con Windows** (opcional): Checkbox en Ajustes para iniciar el servidor al encender el PC
+- [x] **Arranque con Windows**: Checkbox en Ajustes para iniciar el servidor en segundo plano al encender el PC (`app.setLoginItemSettings`)
 - [x] **Backup Automático & Exportación BD**: Copias de seguridad de las bases de datos SQLite en carpeta configurable y descarga directa desde Ajustes
 
 ---

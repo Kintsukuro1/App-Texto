@@ -79,8 +79,14 @@ export const ProfileSettings = () => {
         setColor(user.color);
       }
       setWsName(workspaceName);
+
+      if (typeof window !== 'undefined' && window.electronAPI?.getAutoLaunch) {
+        window.electronAPI.getAutoLaunch().then((enabled) => {
+          setAutoStartWindows(enabled);
+        }).catch(console.error);
+      }
     }
-  }, [isProfileOpen, user, workspaceName, clearError]);
+  }, [isProfileOpen, user, workspaceName, clearError, setAutoStartWindows]);
 
   if (!isProfileOpen) return null;
 

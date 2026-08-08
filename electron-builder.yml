@@ -2,8 +2,10 @@ appId: com.notionlocal.app
 productName: Notion Local
 copyright: Copyright © 2026
 
+electronDist: node_modules/electron/dist
+
 directories:
-  output: release
+  output: dist-installer
   buildResources: public
 
 files:
@@ -23,19 +25,14 @@ win:
     - target: nsis
       arch:
         - x64
-  icon: public/favicon.ico
 
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  installerIcon: public/favicon.ico
-  uninstallerIcon: public/favicon.ico
-  installerHeaderIcon: public/favicon.ico
   shortcutName: Notion Local
 
 asar: true
 
-# Módulos nativos que necesitan ser recompilados para Electron
-npmRebuild: true
+npmRebuild: false
