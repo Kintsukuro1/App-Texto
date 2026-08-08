@@ -1,4 +1,8 @@
-import { insertOrUpdateBlockForSlashMenu } from '@blocknote/core';
+import {
+  insertOrUpdateBlockForSlashMenu,
+  FilePanelExtension,
+  SuggestionMenu,
+} from '@blocknote/core';
 import type { DefaultReactSuggestionItem } from '@blocknote/react';
 import { useNotesStore } from '@/stores/useNotesStore';
 import { useUiStore } from '@/stores/useUiStore';
@@ -187,6 +191,19 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
         setSearchOpen(true);
       },
     },
+    {
+      title: 'Emoji',
+      subtext: 'Buscador y selector de emojis',
+      aliases: ['emoji', 'emoticon', 'carita'],
+      group: 'Bloques básicos',
+      icon: <span>😀</span>,
+      onItemClick: () => {
+        editor.getExtension(SuggestionMenu)?.openSuggestionMenu(':', {
+          deleteTriggerCharacter: true,
+          ignoreQueryLength: true,
+        });
+      },
+    },
 
     // =========================================================================
     // MULTIMEDIA Y ARCHIVOS
@@ -198,7 +215,10 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Media',
       icon: <span>🖼️</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'image' });
+        const insertedBlock = insertOrUpdateBlockForSlashMenu(editor, { type: 'image' });
+        if (insertedBlock?.id) {
+          editor.getExtension(FilePanelExtension)?.showMenu(insertedBlock.id);
+        }
       },
     },
     {
@@ -208,7 +228,10 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Media',
       icon: <span>🎥</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'video' });
+        const insertedBlock = insertOrUpdateBlockForSlashMenu(editor, { type: 'video' });
+        if (insertedBlock?.id) {
+          editor.getExtension(FilePanelExtension)?.showMenu(insertedBlock.id);
+        }
       },
     },
     {
@@ -218,7 +241,10 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Media',
       icon: <span>🎵</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'audio' });
+        const insertedBlock = insertOrUpdateBlockForSlashMenu(editor, { type: 'audio' });
+        if (insertedBlock?.id) {
+          editor.getExtension(FilePanelExtension)?.showMenu(insertedBlock.id);
+        }
       },
     },
     {
@@ -238,7 +264,10 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Media',
       icon: <span>📁</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'file' });
+        const insertedBlock = insertOrUpdateBlockForSlashMenu(editor, { type: 'file' });
+        if (insertedBlock?.id) {
+          editor.getExtension(FilePanelExtension)?.showMenu(insertedBlock.id);
+        }
       },
     },
     {
