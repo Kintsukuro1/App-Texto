@@ -184,7 +184,7 @@ h6 {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Resaltar la burbuja completa de la opción ÚNICAMENTE al pasar el mouse (:hover) */
+/* Resaltar la opción seleccionada tanto con el cursor (:hover) como con las flechas del teclado ([aria-selected="true"]) */
 [role="option"] div,
 [role="menuitem"] div {
   background-color: transparent !important;
@@ -199,8 +199,11 @@ h6 {
 }
 
 [role="option"]:hover,
-[role="menuitem"]:hover {
-  background-color: rgba(99, 102, 241, 0.25) !important;
+[role="menuitem"]:hover,
+[role="option"][aria-selected="true"],
+[role="menuitem"][aria-selected="true"],
+.bn-suggestion-menu-item[aria-selected="true"] {
+  background-color: rgba(99, 102, 241, 0.35) !important;
   color: #ffffff !important;
 }
 

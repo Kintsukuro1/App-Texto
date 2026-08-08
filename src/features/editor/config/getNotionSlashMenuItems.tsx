@@ -110,7 +110,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bloques básicos',
       icon: <span>▶</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'bulletListItem' });
+        insertOrUpdateBlockForSlashMenu(editor, { type: 'toggleListItem' } as any);
       },
     },
     {
@@ -120,6 +120,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bloques básicos',
       icon: <span>📄</span>,
       onItemClick: async () => {
+        insertOrUpdateBlockForSlashMenu(editor, { type: 'paragraph' });
         const activeId = useNotesStore.getState().activePageId;
         if (activeId) {
           await createSubPage(activeId, 'Nueva sub-página');
@@ -143,7 +144,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bloques básicos',
       icon: <span>“</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'paragraph' });
+        insertOrUpdateBlockForSlashMenu(editor, { type: 'quote' } as any);
       },
     },
     {
@@ -153,7 +154,16 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bloques básicos',
       icon: <span>田</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'table' });
+        insertOrUpdateBlockForSlashMenu(editor, {
+          type: 'table',
+          content: {
+            type: 'tableContent',
+            rows: [
+              { cells: ['', '', ''] },
+              { cells: ['', '', ''] },
+            ],
+          } as any,
+        });
       },
     },
     {
@@ -163,7 +173,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bloques básicos',
       icon: <span>—</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'paragraph' });
+        insertOrUpdateBlockForSlashMenu(editor, { type: 'divider' } as any);
       },
     },
     {
@@ -173,6 +183,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bloques básicos',
       icon: <span>🔗</span>,
       onItemClick: () => {
+        insertOrUpdateBlockForSlashMenu(editor, { type: 'paragraph' });
         setSearchOpen(true);
       },
     },
@@ -341,6 +352,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>🏛️</span>,
       onItemClick: async () => {
+        insertOrUpdateBlockForSlashMenu(editor, { type: 'paragraph' });
         const activeId = useNotesStore.getState().activePageId;
         if (activeId) {
           await createSubPage(activeId, '📊 Base de Datos');
