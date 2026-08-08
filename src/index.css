@@ -170,41 +170,113 @@ h6 {
   padding-inline: 0 !important;
 }
 
-/* 2. Menú desplegable Slash "/" y Popovers flotantes de BlockNote */
-.bn-menu-dropdown,
+/* 2. Menú desplegable Slash "/" y Popovers flotantes de BlockNote (Dimensiones y Scroll) */
+.bn-suggestion-menu,
+#bn-suggestion-menu {
+  width: 320px !important;
+  max-width: 90vw !important;
+  min-height: 220px !important;
+  max-height: 380px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0.5rem !important;
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-muted) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #334155 transparent !important;
+}
+
+/* 3. Forzar contenedor del popover flotante a no colapsar la altura del menú */
 [data-floating-ui-focusable],
 [data-radix-popper-content-wrapper]>div,
 .bn-popover,
 .bn-shadcn [role="menu"],
 .bn-shadcn [role="listbox"] {
-  background-color: var(--bg-surface) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-muted) !important;
-  border-radius: 0.75rem !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+  max-height: 400px !important;
+  overflow: visible !important;
+  z-index: 99999 !important;
 }
 
-/* Resaltar la opción seleccionada tanto con el cursor (:hover) como con las flechas del teclado ([aria-selected="true"]) */
+/* 4. Personalizar barra de desplazamiento (Scrollbar) para eliminar la barra blanca nativa de Windows */
+.bn-suggestion-menu::-webkit-scrollbar,
+#bn-suggestion-menu::-webkit-scrollbar,
+[data-floating-ui-focusable]::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.bn-suggestion-menu::-webkit-scrollbar-track,
+#bn-suggestion-menu::-webkit-scrollbar-track,
+[data-floating-ui-focusable]::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.bn-suggestion-menu::-webkit-scrollbar-thumb,
+#bn-suggestion-menu::-webkit-scrollbar-thumb,
+[data-floating-ui-focusable]::-webkit-scrollbar-thumb {
+  background-color: #334155 !important;
+  border-radius: 9999px !important;
+}
+
+.bn-suggestion-menu::-webkit-scrollbar-thumb:hover,
+#bn-suggestion-menu::-webkit-scrollbar-thumb:hover,
+[data-floating-ui-focusable]::-webkit-scrollbar-thumb:hover {
+  background-color: #6366f1 !important;
+}
+
+/* 5. Encabezados de grupo en el menú Slash */
+.bn-suggestion-menu-label {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: var(--text-secondary) !important;
+  padding: 0.5rem 0.75rem 0.25rem 0.75rem !important;
+  margin-top: 0.25rem !important;
+  user-select: none !important;
+}
+
+/* 6. Resaltar la opción seleccionada tanto con el cursor (:hover) como con las flechas del teclado ([aria-selected="true"]) */
 [role="option"] div,
-[role="menuitem"] div {
+[role="menuitem"] div,
+.bn-suggestion-menu-item div {
   background-color: transparent !important;
   background: none !important;
 }
 
+.bn-suggestion-menu-item,
 [role="option"],
 [role="menuitem"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.5rem 0.75rem !important;
+  margin-block: 2px !important;
+  border-radius: 0.5rem !important;
   background-color: transparent !important;
   transition: background-color 0.12s ease-in-out, color 0.12s ease-in-out !important;
-  border-radius: 0.5rem !important;
 }
 
 [role="option"]:hover,
 [role="menuitem"]:hover,
 [role="option"][aria-selected="true"],
 [role="menuitem"][aria-selected="true"],
+.bn-suggestion-menu-item:hover,
 .bn-suggestion-menu-item[aria-selected="true"] {
   background-color: rgba(99, 102, 241, 0.35) !important;
   color: #ffffff !important;
+}
+
+.bn-suggestion-menu-item[aria-selected="true"] .bn-suggestion-menu-item-title,
+.bn-suggestion-menu-item:hover .bn-suggestion-menu-item-title {
+  color: #ffffff !important;
+}
+
+.bn-suggestion-menu-item[aria-selected="true"] .bn-suggestion-menu-item-subtext,
+.bn-suggestion-menu-item:hover .bn-suggestion-menu-item-subtext {
+  color: #e2e8f0 !important;
 }
 
 /* ==========================================================================
