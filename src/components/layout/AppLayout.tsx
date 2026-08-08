@@ -84,13 +84,16 @@ export const AppLayout = () => {
     };
 
     const handleOpenShare = () => setIsShareOpen(true);
+    const handleOpenGraph = () => setIsGraphOpen(true);
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('open-share-panel', handleOpenShare);
+    window.addEventListener('open-graph-view', handleOpenGraph);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('open-share-panel', handleOpenShare);
+      window.removeEventListener('open-graph-view', handleOpenGraph);
     };
   }, [setSearchOpen, getOrCreateDailyNote, toggleZenMode, setZenMode, isZenMode]);
 
