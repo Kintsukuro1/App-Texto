@@ -42,7 +42,7 @@ export const WebBookmarkBlock = createReactBlockSpec(
 
       if (!block.props.url) {
         return (
-          <div className="w-full my-2 p-3 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-xl text-xs space-y-2 select-none">
+          <div contentEditable={false} className="w-full my-2 p-3 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-xl text-xs space-y-2 select-none">
             <div className="flex items-center gap-2 text-[var(--text-secondary)] font-medium">
               <span>🔖</span>
               <span>Añadir marcador web (Web Bookmark)</span>
@@ -74,7 +74,7 @@ export const WebBookmarkBlock = createReactBlockSpec(
       }
 
       return (
-        <div className="w-full my-2 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] hover:border-indigo-500/40 rounded-2xl shadow-sm transition-all flex items-center justify-between gap-4 select-none group">
+        <div contentEditable={false} className="w-full my-2 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] hover:border-indigo-500/40 rounded-2xl shadow-sm transition-all flex items-center justify-between gap-4 select-none group">
           <div className="space-y-1 min-w-0 flex-1">
             <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-primary)] group-hover:text-indigo-300 transition-colors truncate">
               <span>🌐</span>

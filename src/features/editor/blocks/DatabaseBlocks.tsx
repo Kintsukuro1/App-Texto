@@ -26,7 +26,7 @@ export const DatabaseTableBlock = createReactBlockSpec(
       };
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>📊</span>
@@ -110,7 +110,7 @@ export const DatabaseBoardBlock = createReactBlockSpec(
       ];
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>🗂️</span>
@@ -162,7 +162,7 @@ export const DatabaseGalleryBlock = createReactBlockSpec(
       ];
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>🖼️</span>
@@ -217,7 +217,7 @@ export const DatabaseListBlock = createReactBlockSpec(
       ];
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>📜</span>
@@ -268,7 +268,7 @@ export const DatabaseFeedBlock = createReactBlockSpec(
       ];
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>📰</span>
@@ -312,7 +312,7 @@ export const DatabaseDashboardBlock = createReactBlockSpec(
   {
     render: ({ block }) => {
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>🖥️</span>
@@ -357,7 +357,7 @@ export const DatabaseCalendarBlock = createReactBlockSpec(
       const days = Array.from({ length: 14 }, (_, i) => i + 1);
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>📅</span>
@@ -409,7 +409,7 @@ export const DatabaseTimelineBlock = createReactBlockSpec(
       ];
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>⏳</span>
@@ -453,7 +453,7 @@ export const DatabaseFormBlock = createReactBlockSpec(
       const [submitted, setSubmitted] = useState(false);
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>📋</span>

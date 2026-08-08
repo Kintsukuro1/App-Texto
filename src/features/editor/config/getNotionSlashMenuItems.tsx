@@ -7,6 +7,22 @@ import type { DefaultReactSuggestionItem } from '@blocknote/react';
 import { useNotesStore } from '@/stores/useNotesStore';
 import { useUiStore } from '@/stores/useUiStore';
 
+/**
+ * Inserta un bloque personalizado con contenido 'none' y asegura que
+ * exista un párrafo editable posterior para continuar escribiendo.
+ */
+function insertCustomBlock(editor: any, block: any) {
+  const insertedBlock = insertOrUpdateBlockForSlashMenu(editor, block);
+  try {
+    const pos = editor.getTextCursorPosition();
+    if (!pos.nextBlock && insertedBlock) {
+      editor.insertBlocks([{ type: 'paragraph' }], insertedBlock, 'after');
+    }
+  } catch {
+    // Ignorar si el cursor no puede posicionarse
+  }
+}
+
 export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem[] {
   const { createSubPage } = useNotesStore.getState();
   const { setSearchOpen } = useUiStore.getState();
@@ -158,7 +174,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bloques básicos',
       icon: <span>田</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, {
+        insertCustomBlock(editor, {
           type: 'table',
           content: {
             type: 'tableContent',
@@ -177,7 +193,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bloques básicos',
       icon: <span>—</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'divider' } as any);
+        insertCustomBlock(editor, { type: 'divider' } as any);
       },
     },
     {
@@ -277,7 +293,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Media',
       icon: <span>🔖</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'webBookmark' } as any);
+        insertCustomBlock(editor, { type: 'webBookmark' } as any);
       },
     },
 
@@ -291,7 +307,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>📊</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseTable' } as any);
+        insertCustomBlock(editor, { type: 'databaseTable' } as any);
       },
     },
     {
@@ -301,7 +317,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>🗂️</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseBoard' } as any);
+        insertCustomBlock(editor, { type: 'databaseBoard' } as any);
       },
     },
     {
@@ -311,7 +327,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>🖼️</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseGallery' } as any);
+        insertCustomBlock(editor, { type: 'databaseGallery' } as any);
       },
     },
     {
@@ -321,7 +337,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>📜</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseList' } as any);
+        insertCustomBlock(editor, { type: 'databaseList' } as any);
       },
     },
     {
@@ -331,7 +347,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>📰</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseFeed' } as any);
+        insertCustomBlock(editor, { type: 'databaseFeed' } as any);
       },
     },
     {
@@ -341,7 +357,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>🖥️</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseDashboard' } as any);
+        insertCustomBlock(editor, { type: 'databaseDashboard' } as any);
       },
     },
     {
@@ -351,7 +367,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>📅</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseCalendar' } as any);
+        insertCustomBlock(editor, { type: 'databaseCalendar' } as any);
       },
     },
     {
@@ -361,7 +377,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>⏳</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseTimeline' } as any);
+        insertCustomBlock(editor, { type: 'databaseTimeline' } as any);
       },
     },
     {
@@ -371,7 +387,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>📦</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseTable' } as any);
+        insertCustomBlock(editor, { type: 'databaseTable' } as any);
       },
     },
     {
@@ -395,7 +411,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Bases de datos',
       icon: <span>🔗</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseTable' } as any);
+        insertCustomBlock(editor, { type: 'databaseTable' } as any);
       },
     },
 
@@ -409,7 +425,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Gráficos y Visualización',
       icon: <span>📊</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'chartVerticalBar' } as any);
+        insertCustomBlock(editor, { type: 'chartVerticalBar' } as any);
       },
     },
     {
@@ -419,7 +435,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Gráficos y Visualización',
       icon: <span>📈</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'chartHorizontalBar' } as any);
+        insertCustomBlock(editor, { type: 'chartHorizontalBar' } as any);
       },
     },
     {
@@ -429,7 +445,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Gráficos y Visualización',
       icon: <span>📉</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'chartLine' } as any);
+        insertCustomBlock(editor, { type: 'chartLine' } as any);
       },
     },
     {
@@ -439,7 +455,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Gráficos y Visualización',
       icon: <span>🍩</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'chartDonut' } as any);
+        insertCustomBlock(editor, { type: 'chartDonut' } as any);
       },
     },
     {
@@ -449,7 +465,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Gráficos y Visualización',
       icon: <span>🔢</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'chartNumber' } as any);
+        insertCustomBlock(editor, { type: 'chartNumber' } as any);
       },
     },
     {
@@ -459,7 +475,7 @@ export function getNotionSlashMenuItems(editor: any): DefaultReactSuggestionItem
       group: 'Gráficos y Visualización',
       icon: <span>📋</span>,
       onItemClick: () => {
-        insertOrUpdateBlockForSlashMenu(editor, { type: 'databaseForm' } as any);
+        insertCustomBlock(editor, { type: 'databaseForm' } as any);
       },
     },
   ];

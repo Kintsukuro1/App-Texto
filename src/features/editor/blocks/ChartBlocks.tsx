@@ -20,7 +20,7 @@ export const ChartVerticalBarBlock = createReactBlockSpec(
       ];
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>📊</span>
@@ -67,7 +67,7 @@ export const ChartHorizontalBarBlock = createReactBlockSpec(
       ];
 
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>📈</span>
@@ -106,7 +106,7 @@ export const ChartLineBlock = createReactBlockSpec(
   {
     render: ({ block }) => {
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>📉</span>
@@ -155,7 +155,7 @@ export const ChartDonutBlock = createReactBlockSpec(
   {
     render: ({ block }) => {
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-3 select-none">
           <div className="flex items-center justify-between border-b border-[var(--border-muted)] pb-2">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
               <span>🍩</span>
@@ -212,7 +212,7 @@ export const ChartNumberBlock = createReactBlockSpec(
   {
     render: ({ block }) => {
       return (
-        <div className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-1 select-none">
+        <div contentEditable={false} className="w-full my-3 p-4 bg-[var(--bg-surface)] border border-[var(--border-muted)] rounded-2xl shadow-md space-y-1 select-none">
           <div className="text-xs font-medium text-[var(--text-secondary)]">{block.props.title}</div>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-extrabold text-indigo-400">$45,280</span>
