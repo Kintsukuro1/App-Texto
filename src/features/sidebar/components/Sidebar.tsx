@@ -121,8 +121,10 @@ export const Sidebar = () => {
 
   return (
     <aside
-      className={`bg-[var(--bg-surface)] border-r border-[var(--border-muted)] transition-all duration-300 flex flex-col justify-between p-3 select-none ${
-        isSidebarCollapsed ? 'w-16' : 'w-64'
+      className={`bg-[var(--bg-surface)] border-r border-[var(--border-muted)] transition-all duration-300 flex flex-col justify-between p-3 select-none z-50 ${
+        isSidebarCollapsed
+          ? 'w-16 max-md:-translate-x-full max-md:fixed max-md:inset-y-0 max-md:left-0'
+          : 'w-64 max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:shadow-2xl max-md:translate-x-0'
       }`}
     >
       {/* Top Header & Navigation Actions */}

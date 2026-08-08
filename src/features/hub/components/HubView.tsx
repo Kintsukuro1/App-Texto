@@ -54,7 +54,7 @@ export const HubView = () => {
 
       <div className="max-w-5xl w-full mx-auto px-6 sm:px-10 py-8 space-y-8 z-10 relative">
         {/* HERO SECTION: Avatar & Dynamic Greeting */}
-        <section className="pt-4 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+        <section className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-5">
             <div className="relative w-20 h-20 rounded-full bg-[var(--bg-surface)] border border-[var(--border-muted)] shadow-xl flex-shrink-0 flex items-center justify-center">
               {user ? (

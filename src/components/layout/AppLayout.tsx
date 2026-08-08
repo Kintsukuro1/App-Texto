@@ -12,6 +12,8 @@ import { SharePanel } from '@/features/share/components/SharePanel';
 import { GraphViewModal } from '@/features/graph/components/GraphViewModal';
 import { requestNotificationPermission } from '@/core/notifications';
 
+import { Menu } from 'lucide-react';
+
 export const AppLayout = () => {
   const {
     isSidebarCollapsed,
@@ -101,6 +103,14 @@ export const AppLayout = () => {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans transition-colors duration-200 relative">
+      {/* Backdrop overlay for mobile drawer when sidebar is expanded */}
+      {!isSidebarCollapsed && !isZenMode && (
+        <div
+          onClick={toggleSidebar}
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 md:hidden animate-fade-in"
+        />
+      )}
+
       {/* Componente Sidebar (oculto en Modo Zen) */}
       {!isZenMode && <Sidebar />}
 
@@ -108,65 +118,72 @@ export const AppLayout = () => {
       <main className="flex-1 flex flex-col h-full bg-[var(--bg-primary)] overflow-hidden relative">
         {/* Header normal (oculto en Modo Zen) */}
         {!isZenMode && (
-          <header className="h-14 border-b border-[var(--border-muted)] px-6 flex items-center justify-between bg-[var(--bg-surface)] shrink-0">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-[var(--text-primary)]">
+          <header className="h-14 border-b border-[var(--border-muted)] px-4 sm:px-6 flex items-center justify-between bg-[var(--bg-surface)] shrink-0 z-30">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              {/* Botón menú hamburguesa para móviles */}
+              <button
+                onClick={toggleSidebar}
+                className="p-1.5 rounded-lg bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer md:hidden shrink-0"
+                title="Abrir menú"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+
+              <span className="text-xs sm:text-sm font-semibold text-[var(--text-primary)] truncate">
                 {workspaceName || 'Notion Local'}
               </span>
               {isHubActive ? (
-                <span className="text-xs text-indigo-400 font-mono">
+                <span className="text-[11px] sm:text-xs text-indigo-400 font-mono shrink-0">
                   / Inicio
                 </span>
               ) : activePage ? (
-                <span className="text-xs text-[var(--text-secondary)] font-mono">
+                <span className="text-[11px] sm:text-xs text-[var(--text-secondary)] font-mono truncate max-w-[120px] sm:max-w-[200px]">
                   / {activePage.title || 'Sin título'}
                 </span>
               ) : null}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium flex items-center gap-2"
+                className="px-2.5 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium flex items-center gap-1.5"
+                title="Buscar (Ctrl+K)"
               >
-                <span>🔍 Buscar</span>
-                <kbd className="px-1 py-0.5 text-[10px] bg-[var(--bg-surface)] rounded text-[var(--text-secondary)] font-mono border border-[var(--border-muted)]">
+                <span>🔍</span>
+                <span className="hidden sm:inline">Buscar</span>
+                <kbd className="hidden md:inline px-1 py-0.5 text-[10px] bg-[var(--bg-surface)] rounded text-[var(--text-secondary)] font-mono border border-[var(--border-muted)]">
                   Ctrl+K
                 </kbd>
               </button>
+
               {/* Botón Focus/Zen Mode */}
               <button
                 onClick={toggleZenMode}
                 title="Modo Focus / Zen (Ctrl+Shift+F)"
-                className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium flex items-center gap-1.5"
+                className="hidden sm:flex px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium items-center gap-1.5"
               >
                 <span>🧘</span>
                 <span>Zen</span>
               </button>
+
               {/* Botón Graph View Red 2D */}
               <button
                 onClick={() => setIsGraphOpen(true)}
                 title="Ver mapa de red 2D"
-                className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium flex items-center gap-1.5"
+                className="px-2.5 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] border border-[var(--border-muted)] text-[var(--text-primary)] transition-colors cursor-pointer font-medium flex items-center gap-1.5"
               >
                 <span>🕸️</span>
-                <span>Red 2D</span>
+                <span className="hidden md:inline">Red 2D</span>
               </button>
 
               {/* Botón Compartir / Invitar */}
               <button
                 onClick={() => setIsShareOpen(true)}
                 title="Compartir en red local e Invitar"
-                className="px-3 py-1.5 rounded-lg text-xs bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 transition-colors cursor-pointer font-medium flex items-center gap-1.5 shadow-sm"
+                className="px-2.5 py-1.5 rounded-lg text-xs bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 transition-colors cursor-pointer font-medium flex items-center gap-1.5 shadow-sm"
               >
                 <span>📡</span>
-                <span>Compartir / Invitar</span>
-              </button>
-              <button
-                onClick={toggleSidebar}
-                className="px-3 py-1.5 rounded-lg text-xs bg-[var(--bg-primary)] hover:bg-[var(--border-muted)] text-[var(--text-primary)] border border-[var(--border-muted)] transition-colors cursor-pointer font-medium"
-              >
-                {isSidebarCollapsed ? 'Expandir' : 'Colapsar'}
+                <span className="hidden md:inline">Compartir</span>
               </button>
             </div>
           </header>

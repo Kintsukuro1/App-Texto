@@ -28,7 +28,7 @@ export const Breadcrumbs = ({ currentPage }: BreadcrumbsProps) => {
   }
 
   return (
-    <nav className="flex items-center flex-wrap gap-1 text-xs text-[var(--text-secondary)] font-medium mb-4">
+    <nav className="flex items-center gap-1 text-xs text-[var(--text-secondary)] font-medium mb-3 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5">
       {/* Workspace Root */}
       <span className="flex items-center gap-1 hover:text-[var(--text-primary)] transition-colors cursor-pointer">
         <Layers className="w-3.5 h-3.5 text-indigo-400" />

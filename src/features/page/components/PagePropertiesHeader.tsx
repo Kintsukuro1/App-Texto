@@ -98,7 +98,7 @@ export const PagePropertiesHeader = ({ page }: PagePropertiesHeaderProps) => {
   return (
     <div className="flex flex-col gap-2.5 my-4 text-xs font-medium text-[var(--text-secondary)] select-none">
       {properties.map((prop) => (
-        <div key={prop.id} className="grid grid-cols-[140px_1fr] items-center gap-4 group">
+        <div key={prop.id} className="grid grid-cols-1 sm:grid-cols-[140px_1fr] items-start sm:items-center gap-1.5 sm:gap-4 group">
           {/* Columna Nombre Propiedad */}
           <div className="flex items-center gap-2 text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
             {getPropIcon(prop.type)}
