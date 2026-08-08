@@ -122,10 +122,16 @@ export const Editor = ({
   }, [pageId, user?.id, user?.username, user?.color, sessionToken]);
 
 
-  const parseInitialContent = (): PartialBlock[] | undefined => {
-    if (!initialContent) return undefined;
+  const initialContentRef = useRef(initialContent);
+  useEffect(() => {
+    initialContentRef.current = initialContent;
+  }, [initialContent]);
+
+  const parseInitialContent = (rawContent?: string): PartialBlock[] | undefined => {
+    const target = rawContent !== undefined ? rawContent : initialContentRef.current;
+    if (!target) return undefined;
     try {
-      const parsed = JSON.parse(initialContent);
+      const parsed = JSON.parse(target);
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed as PartialBlock[];
       }
@@ -205,7 +211,7 @@ export const Editor = ({
 
     const seedInitialContent = () => {
       if (isInitializedRef.current) return;
-      const parsed = parseInitialContent();
+      const parsed = parseInitialContent(initialContentRef.current);
 
       // Si el editor actual está vacío pero SQLite tiene contenido guardado, restaurarlo en Yjs/BlockNote
       if (isBlockContentEmpty(editor.document as PartialBlock[]) && parsed && !isBlockContentEmpty(parsed)) {
@@ -213,6 +219,12 @@ export const Editor = ({
           editor.replaceBlocks(editor.document, parsed);
         } catch (err) {
           console.error('Error al inicializar contenido de la nota desde SQLite:', err);
+          try {
+            editor.removeBlocks(editor.document);
+            editor.insertBlocks(parsed, editor.document[0] || undefined, 'after');
+          } catch (fallbackErr) {
+            console.error('Error en fallback al insertar bloques:', fallbackErr);
+          }
         }
       }
       isInitializedRef.current = true;
@@ -226,7 +238,7 @@ export const Editor = ({
     return () => {
       provider.off('synced', seedInitialContent);
     };
-  }, [editor, provider, ydoc, pageId, initialContent]);
+  }, [editor, provider, ydoc, pageId]);
 
   useEffect(() => {
     return () => {
@@ -237,8 +249,16 @@ export const Editor = ({
   }, []);
 
   const handleChange = () => {
-    // Si no está inicializado (o está cargando el Yjs colaborativo), no guardar para evitar vaciado
+    // Si el proveedor colaborativo aún no se ha inicializado o sincronizado, evitar guardar para prevenir el vaciado accidental
     if (provider && !isInitializedRef.current) {
+      return;
+    }
+
+    const currentBlocks = editor.document as PartialBlock[];
+    const parsedInitial = parseInitialContent(initialContentRef.current);
+
+    // Guardia anti-vaciado: Si el editor reporta vaciedad pero la nota guardada contenía bloques válidos y Yjs no está sincronizado
+    if (isBlockContentEmpty(currentBlocks) && parsedInitial && !isBlockContentEmpty(parsedInitial) && provider && !provider.isSynced) {
       return;
     }
 
